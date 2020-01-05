@@ -19,7 +19,8 @@ add_library(${PROJECT_NAME}
   src/appliances_backend/helios_kwl_modbus_client.cpp
   src/appliances_backend/appliance_base.cpp
   src/appliances_backend/interface_base.cpp
-  src/appliances_backend/appliances/helios_kwl.cpp)
+  src/appliances_backend/appliances/helios_kwl.cpp
+  src/appliances_backend/interfaces/mqtt.cpp)
 
 set(EXECUTABLE_SOURCES
   src/main.cpp)
