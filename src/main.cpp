@@ -7,7 +7,6 @@
 
 // Private
 #include <appliances_backend/appliances/helios_kwl.h>
-//#include <appliances_backend/helios_kwl_modbus_client.h>
 
 std::atomic<bool> should_run;
 
@@ -24,12 +23,6 @@ int main(int argc, char** argv)
 {
   using namespace appliances_backend;
 
-  /*std::cout << "Connecting to modbus server" << std::endl;
-  ModbusClient modbus_client("192.168.100.14", 502, 180);
-  std::cout << "Connected" << std::endl;*/
-
-  //HeliosKwlModbusClient helios("192.168.100.14");
-
   std::signal(SIGINT, signalHandler);
   std::signal(SIGTERM, signalHandler);
 
@@ -43,14 +36,14 @@ int main(int argc, char** argv)
 
   while(should_run)
   {
-    std::cout << "Duty cycle" << std::endl;
+    if(appliance->wasVariableChanged())
+    {
+      std::pair<std::string, std::shared_ptr<property::RawData>> changed_variable = appliance->getChangedVariable();
 
+      std::cout << "Variable changed: " << changed_variable.first << " = " << changed_variable.second << std::endl;
+    }
     
-    /*std::cout << "Output: " << helios.readFanStage() << std::endl;
-
-      helios.writeFanStage(2);*/
-
-    usleep(500000);
+    usleep(50000);
   }
 
   std::cout << "Stopping appliance" << std::endl;

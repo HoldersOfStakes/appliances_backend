@@ -11,7 +11,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 include_directories(
-  include)
+  include
+  3rdparty/libproperty/include)
 
 add_library(${PROJECT_NAME}
   src/appliances_backend/modbus_client.cpp

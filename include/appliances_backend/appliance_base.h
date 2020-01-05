@@ -5,6 +5,13 @@
 // System
 #include <atomic>
 #include <thread>
+#include <map>
+#include <deque>
+#include <iostream>
+#include <mutex>
+
+// libproperty
+#include <property/value.hpp>
 
 
 namespace appliances_backend
@@ -18,11 +25,26 @@ namespace appliances_backend
     void start();
     void stop();
     
-    virtual void run() = 0;
+    bool wasVariableChanged();
+    std::pair<std::string, std::shared_ptr<property::RawData>> getChangedVariable();
 
   protected:
     std::atomic<bool> should_run_;
+    virtual void run() = 0;
+
+    template<typename TValueType>
+    void setVariableState(std::string variable_path, TValueType value)
+    {
+      setRawVariableState(variable_path, std::make_shared<property::Value<TValueType>>(value));
+    }
+
+  private:
     std::thread worker_thread_;
+    std::deque<std::string> changed_variables_;
+    std::map<std::string, std::shared_ptr<property::RawData>> variable_states_;
+    std::mutex variable_access_mutex_;
+
+    void setRawVariableState(std::string variable_path, std::shared_ptr<property::RawData> content);
   };
 }
 

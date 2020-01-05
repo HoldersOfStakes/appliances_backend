@@ -25,13 +25,7 @@ namespace appliances_backend
     {
       while(should_run_)
       {
-	unsigned int fan_stage = getFanStage();
-
-	if(fan_stage != fan_stage_)
-	{
-	  fan_stage_ = fan_stage;
-	  std::cout << "Fan stage changed to " << fan_stage_ << std::endl;
-	}
+	setVariableState("fan_stage", getFanStage());
 
 	usleep(100000);
       }
