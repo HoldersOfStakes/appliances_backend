@@ -1,0 +1,3 @@
+[submodule "3rdparty/libproperty"]
+	path = 3rdparty/libproperty
+	url = https://github.com/HoldersOfStakes/libproperty.git
