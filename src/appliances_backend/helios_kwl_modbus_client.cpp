@@ -1,4 +1,3 @@
-#include <iostream>
 #include <appliances_backend/helios_kwl_modbus_client.h>
 
 

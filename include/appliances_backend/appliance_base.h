@@ -13,17 +13,20 @@
 // libproperty
 #include <property/value.hpp>
 
+// Private
+#include <appliances_backend/manageable_base.h>
+
 
 namespace appliances_backend
 {
-  class ApplianceBase
+  class ApplianceBase : public ManageableBase
   {
   public:
     ApplianceBase() = default;
     virtual ~ApplianceBase() = default;
 
-    void start();
-    void stop();
+    void start() override;
+    void stop() override;
     
     bool wasVariableChanged();
     std::pair<std::string, std::shared_ptr<property::RawData>> getChangedVariable();

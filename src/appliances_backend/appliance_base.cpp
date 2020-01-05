@@ -57,7 +57,6 @@ namespace appliances_backend
 
     if(changed)
     {
-      std::cout << "Changed" << std::endl;
       variable_states_[variable_path] = content;
       
       changed_variables_.push_back(variable_path);

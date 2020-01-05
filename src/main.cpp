@@ -8,6 +8,7 @@
 // Private
 #include <appliances_backend/appliances/helios_kwl.h>
 #include <appliances_backend/interfaces/mqtt.h>
+#include <appliances_backend/appliances_manager.h>
 
 
 std::atomic<bool> should_run;
@@ -29,41 +30,35 @@ int main(int argc, char** argv)
   std::signal(SIGINT, signalHandler);
   std::signal(SIGTERM, signalHandler);
 
-  std::shared_ptr<InterfaceBase> interface = std::make_shared<interfaces::Mqtt>("192.168.100.2", 1883);
+  /*std::shared_ptr<InterfaceBase> interface = std::make_shared<interfaces::Mqtt>("192.168.100.2", 1883);
 
   std::cout << "Starting interface" << std::endl;
   //interface->start();
-  std::cout << "Started interface" << std::endl;
+  std::cout << "Started interface" << std::endl;*/
 
-  std::shared_ptr<ApplianceBase> appliance = std::make_shared<appliances::HeliosKwl>("192.168.100.14");
-
-  std::cout << "Starting appliance" << std::endl;
-  appliance->start();
-  std::cout << "Started appliance" << std::endl;
+  AppliancesManager appliances_manager;
+  appliances_manager.addAppliance<appliances::HeliosKwl>("helios", "192.168.100.14");
+  appliances_manager.start();
 
   should_run = true;
 
   while(should_run)
   {
-    if(appliance->wasVariableChanged())
+    std::map<std::string, std::shared_ptr<property::RawData>> changed_variables = appliances_manager.getChangedVariables();
+
+    for(const std::pair<std::string, std::shared_ptr<property::RawData>>& changed_variable_pair : changed_variables)
     {
-      std::pair<std::string, std::shared_ptr<property::RawData>> changed_variable = appliance->getChangedVariable();
-
-      std::cout << "Variable changed: " << changed_variable.first << " = " << changed_variable.second << std::endl;
-
-      // emit variable change to interface 
+      std::cout << "Changed: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
     }
-    
+
     usleep(50000);
   }
 
-  std::cout << "Stopping appliance" << std::endl;
-  appliance->stop();
-  std::cout << "Stopped appliance" << std::endl;
+  appliances_manager.stop();
 
-  std::cout << "Stopping interface" << std::endl;
+  /*std::cout << "Stopping interface" << std::endl;
   //interface->stop();
-  std::cout << "Stopped interface" << std::endl;
+  std::cout << "Stopped interface" << std::endl;*/
 
   return EXIT_SUCCESS;
 }
