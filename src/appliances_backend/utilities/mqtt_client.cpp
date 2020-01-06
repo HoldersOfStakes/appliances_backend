@@ -121,10 +121,8 @@ namespace appliances_backend
     {
       std::lock_guard<std::mutex> lock(received_messages_access_);
 
-      std::cout << "!" << std::endl;
       if(message != nullptr && message->topic != nullptr && message->payload != nullptr)
       {
-	std::cout << "2!" << std::endl;
 	std::string topic = message->topic;
 
 	if(received_messages_.find(topic) != received_messages_.end())
@@ -140,7 +138,7 @@ namespace appliances_backend
     void MqttClient::handleLog(int log_level, std::string message)
     {
       // TODO(fairlight1337): Add logging facility and forward messages there.
-      std::cout << "Log[" << log_level << "]: " << message << std::endl;
+      //std::cout << "Log[" << log_level << "]: " << message << std::endl;
     }
 
     void MqttClient::handleConnect(int return_code)
