@@ -1,5 +1,5 @@
-#ifndef __APPLIANCES_BACKEND_APPLIANCES_HELIOS_KWL_H__
-#define __APPLIANCES_BACKEND_APPLIANCES_HELIOS_KWL_H__
+#ifndef __APPLIANCES_BACKEND_APPLIANCES_HELIOS_KWL_HELIOS_KWL_H__
+#define __APPLIANCES_BACKEND_APPLIANCES_HELIOS_KWL_HELIOS_KWL_H__
 
 
 // System
@@ -8,7 +8,7 @@
 
 // Private
 #include <appliances_backend/appliance_base.h>
-#include <appliances_backend/helios_kwl_modbus_client.h>
+#include <appliances_backend/appliances/helios_kwl/helios_kwl_modbus_client.h>
 
 
 namespace appliances_backend
@@ -34,4 +34,4 @@ namespace appliances_backend
 }
 
 
-#endif /* __APPLIANCES_BACKEND_APPLIANCES_HELIOS_KWL_H__ */
+#endif /* __APPLIANCES_BACKEND_APPLIANCES_HELIOS_KWL_HELIOS_KWL_H__ */

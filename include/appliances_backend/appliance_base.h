@@ -25,16 +25,10 @@ namespace appliances_backend
     ApplianceBase() = default;
     virtual ~ApplianceBase() = default;
 
-    void start() override;
-    void stop() override;
-    
     bool wasVariableChanged();
     std::pair<std::string, std::shared_ptr<property::RawData>> getChangedVariable();
 
   protected:
-    std::atomic<bool> should_run_;
-    virtual void run() = 0;
-
     template<typename TValueType>
     void setVariableState(std::string variable_path, TValueType value)
     {
@@ -42,7 +36,6 @@ namespace appliances_backend
     }
 
   private:
-    std::thread worker_thread_;
     std::deque<std::string> changed_variables_;
     std::map<std::string, std::shared_ptr<property::RawData>> variable_states_;
     std::mutex variable_access_mutex_;

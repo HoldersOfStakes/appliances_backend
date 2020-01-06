@@ -21,7 +21,7 @@ namespace appliances_backend
   {
   public:
     ManagerBase() = default;
-    virtual ~ManagerBase() = default;
+    virtual ~ManagerBase();
 
     void start();
     void stop();
@@ -34,13 +34,25 @@ namespace appliances_backend
     template<class TManageableType, class ... Args>
     void addManageableEntity(std::string key, Args ... args)
     {
-      if(managed_entities_.find(key) != managed_entities_.end())
       {
-	throw std::runtime_error("Key '" + key + "' already present.");
+	std::lock_guard<std::mutex> lock(managed_entities_access_);
+
+	if(managed_entities_.find(key) != managed_entities_.end())
+	{
+	  throw std::runtime_error("Key '" + key + "' already present.");
+	}
+
+	managed_entities_[key] = std::make_shared<TManageableType>(std::forward<Args>(args)...);
       }
 
-      managed_entities_[key] = std::make_shared<TManageableType>(std::forward<Args>(args)...);
+      if(is_started_)
+      {
+	startManagedEntity(key);
+      }
     }
+
+    void startManagedEntity(std::string key);
+    void stopManagedEntity(std::string key);
   };
 }
 

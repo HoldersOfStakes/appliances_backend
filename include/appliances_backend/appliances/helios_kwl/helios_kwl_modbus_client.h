@@ -6,7 +6,7 @@
 #include <iostream>
 
 // Private
-#include <appliances_backend/modbus_client.h>
+#include <appliances_backend/utilities/modbus_client.h>
 
 
 namespace appliances_backend
@@ -42,7 +42,7 @@ namespace appliances_backend
     uint16_t* readVariable(std::string variable, unsigned int register_count);
 
   private:
-    ModbusClient modbus_client_;
+    utilities::ModbusClient modbus_client_;
 
     void printHex(uint16_t* data, ssize_t length);
   };

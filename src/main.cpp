@@ -6,9 +6,10 @@
 #include <unistd.h>
 
 // Private
-#include <appliances_backend/appliances/helios_kwl.h>
-#include <appliances_backend/interfaces/mqtt.h>
+#include <appliances_backend/appliances/helios_kwl/helios_kwl.h>
+#include <appliances_backend/interfaces/homebridge/homebridge_mqtt.h>
 #include <appliances_backend/appliances_manager.h>
+#include <appliances_backend/interfaces_manager.h>
 
 
 std::atomic<bool> should_run;
@@ -18,7 +19,7 @@ void signalHandler(int signal)
 {
   if(signal == SIGINT || signal == SIGTERM)
   {
-    std::cout << "Received stop signal" << std::endl;
+    std::cout << "\rReceived stop signal" << std::endl;
     should_run = false;
   }
 }
@@ -30,11 +31,9 @@ int main(int argc, char** argv)
   std::signal(SIGINT, signalHandler);
   std::signal(SIGTERM, signalHandler);
 
-  /*std::shared_ptr<InterfaceBase> interface = std::make_shared<interfaces::Mqtt>("192.168.100.2", 1883);
-
-  std::cout << "Starting interface" << std::endl;
-  //interface->start();
-  std::cout << "Started interface" << std::endl;*/
+  InterfacesManager interfaces_manager;
+  interfaces_manager.addInterface<interfaces::HomebridgeMqtt>("homebridge", "192.168.100.2", 1883);
+  interfaces_manager.start();
 
   AppliancesManager appliances_manager;
   appliances_manager.addAppliance<appliances::HeliosKwl>("helios", "192.168.100.14");
@@ -55,10 +54,7 @@ int main(int argc, char** argv)
   }
 
   appliances_manager.stop();
-
-  /*std::cout << "Stopping interface" << std::endl;
-  //interface->stop();
-  std::cout << "Stopped interface" << std::endl;*/
+  interfaces_manager.stop();
 
   return EXIT_SUCCESS;
 }

@@ -1,0 +1,22 @@
+#include <appliances_backend/manageable_base.h>
+
+
+namespace appliances_backend
+{
+  void ManageableBase::start()
+  {
+    stop();
+    
+    should_run_ = true;
+    worker_thread_ = std::thread(&ManageableBase::run, this);
+  }
+
+  void ManageableBase::stop()
+  {
+    if(should_run_)
+    {
+      should_run_ = false;
+      worker_thread_.join();
+    }
+  }
+}

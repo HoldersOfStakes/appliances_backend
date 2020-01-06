@@ -3,23 +3,6 @@
 
 namespace appliances_backend
 {
-  void ApplianceBase::start()
-  {
-    stop();
-    
-    should_run_ = true;
-    worker_thread_ = std::thread(&ApplianceBase::run, this);
-  }
-
-  void ApplianceBase::stop()
-  {
-    if(should_run_)
-    {
-      should_run_ = false;
-      worker_thread_.join();
-    }
-  }
-
   bool ApplianceBase::wasVariableChanged()
   {
     std::lock_guard<std::mutex> lock(variable_access_mutex_);

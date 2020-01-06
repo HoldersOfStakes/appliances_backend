@@ -2,6 +2,11 @@
 #define __APPLIANCES_BACKEND_MANAGEABLE_BASE_H__
 
 
+// System
+#include <atomic>
+#include <thread>
+
+
 namespace appliances_backend
 {
   class ManageableBase
@@ -10,8 +15,14 @@ namespace appliances_backend
     ManageableBase() = default;
     virtual ~ManageableBase() = default;
 
-    virtual void start() = 0;
-    virtual void stop() = 0;
+    void start();
+    void stop();
+
+  protected:
+    std::atomic<bool> should_run_;
+    std::thread worker_thread_;
+
+    virtual void run() = 0;
   };
 }
 

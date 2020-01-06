@@ -15,12 +15,14 @@ include_directories(
   3rdparty/libproperty/include)
 
 add_library(${PROJECT_NAME}
-  src/appliances_backend/modbus_client.cpp
-  src/appliances_backend/helios_kwl_modbus_client.cpp
+  src/appliances_backend/utilities/modbus_client.cpp
+  src/appliances_backend/utilities/mqtt_client.cpp
+  src/appliances_backend/appliances/helios_kwl/helios_kwl_modbus_client.cpp
+  src/appliances_backend/manageable_base.cpp
   src/appliances_backend/appliance_base.cpp
   src/appliances_backend/interface_base.cpp
-  src/appliances_backend/appliances/helios_kwl.cpp
-  src/appliances_backend/interfaces/mqtt.cpp
+  src/appliances_backend/appliances/helios_kwl/helios_kwl.cpp
+  src/appliances_backend/interfaces/homebridge/homebridge_mqtt.cpp
   src/appliances_backend/appliances_manager.cpp
   src/appliances_backend/manager_base.cpp)
 
