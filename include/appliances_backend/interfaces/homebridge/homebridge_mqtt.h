@@ -23,11 +23,16 @@ namespace appliances_backend
     public:
       HomebridgeMqtt(std::string host, unsigned short port);
 
+      void registerAccessory(std::string name, std::shared_ptr<Accessory> accessory) override;
+      void deregisterAccessory(std::string name) override;
+
     protected:
       void run() override;
 
     private:
       utilities::MqttClient mqtt_client_;
+
+      void publishString(std::string topic, std::string payload);
     };
   }
 }

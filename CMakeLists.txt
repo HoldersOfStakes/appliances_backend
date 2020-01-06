@@ -24,7 +24,10 @@ add_library(${PROJECT_NAME}
   src/appliances_backend/appliances/helios_kwl/helios_kwl.cpp
   src/appliances_backend/interfaces/homebridge/homebridge_mqtt.cpp
   src/appliances_backend/appliances_manager.cpp
-  src/appliances_backend/manager_base.cpp)
+  src/appliances_backend/interfaces_manager.cpp
+  src/appliances_backend/manager_base.cpp
+  src/appliances_backend/accessory.cpp
+  src/appliances_backend/accessories_manager.cpp)
 
 set(EXECUTABLE_SOURCES
   src/main.cpp)

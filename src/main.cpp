@@ -10,6 +10,7 @@
 #include <appliances_backend/interfaces/homebridge/homebridge_mqtt.h>
 #include <appliances_backend/appliances_manager.h>
 #include <appliances_backend/interfaces_manager.h>
+#include <appliances_backend/accessories_manager.h>
 
 
 std::atomic<bool> should_run;
@@ -39,6 +40,14 @@ int main(int argc, char** argv)
   appliances_manager.addAppliance<appliances::HeliosKwl>("helios", "192.168.100.14");
   appliances_manager.start();
 
+  AccessoriesManager accessories_manager;
+  accessories_manager.addAccessory("ventilation", AccessoryType::Fan);
+
+  for(const std::string accessory_name : accessories_manager.getAccessoryNames())
+  {
+    interfaces_manager.registerAccessory(accessory_name, accessories_manager.getAccessory(accessory_name));
+  }
+
   should_run = true;
 
   while(should_run)
@@ -51,6 +60,11 @@ int main(int argc, char** argv)
     }
 
     usleep(50000);
+  }
+
+  for(const std::string accessory_name : accessories_manager.getAccessoryNames())
+  {
+    interfaces_manager.deregisterAccessory(accessory_name);
   }
 
   appliances_manager.stop();

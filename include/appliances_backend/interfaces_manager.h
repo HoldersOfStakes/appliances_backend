@@ -10,6 +10,9 @@
 #include <map>
 #include <mutex>
 
+// libproperty
+#include <property/raw_data.h>
+
 // Private
 #include <appliances_backend/interface_base.h>
 #include <appliances_backend/manager_base.h>
@@ -29,6 +32,9 @@ namespace appliances_backend
     }
 
     void setVariable(std::string variable_path, std::shared_ptr<property::RawData> value);
+
+    void registerAccessory(std::string name, std::shared_ptr<Accessory> accessory);
+    void deregisterAccessory(std::string name);
 
   private:
     void conditionallySetVariable(std::shared_ptr<InterfaceBase> interface, std::string variable_path, std::shared_ptr<property::RawData> value);
