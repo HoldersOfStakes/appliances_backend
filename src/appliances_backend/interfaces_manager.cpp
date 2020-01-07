@@ -18,7 +18,7 @@ namespace appliances_backend
     }
   }
 
-  void InterfacesManager::registerAccessory(std::string name, std::shared_ptr<Accessory> accessory)
+  void InterfacesManager::registerAccessory(std::shared_ptr<Accessory> accessory)
   {
     for(const std::pair<std::string, std::shared_ptr<ManageableBase>> managed_entity_pair : managed_entities_)
     {
@@ -29,7 +29,7 @@ namespace appliances_backend
 	throw std::runtime_error("Managed entity with key '" + managed_entity_pair.first + "' not of expected type.");
       }
 
-      interface->registerAccessory(name, accessory);
+      interface->registerAccessory(accessory);
     }
   }
 

@@ -21,7 +21,16 @@ namespace appliances_backend
     AccessoriesManager() = default;
     virtual ~AccessoriesManager() = default;
 
-    void addAccessory(std::string name, AccessoryType accessory_type);
+    template<class ... Args>
+    void addAccessory(std::string name, Args ... args)
+    {
+      if(accessories_.find(name) != accessories_.end())
+      {
+	throw std::runtime_error("Accessory name already present: '" + name + "'");
+      }
+
+      accessories_[name] = std::make_shared<Accessory>(name, std::forward<Args>(args)...);
+    }
 
     std::vector<std::string> getAccessoryNames();
     std::shared_ptr<Accessory> getAccessory(std::string name);

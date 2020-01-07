@@ -33,7 +33,7 @@ namespace appliances_backend
 
     void setVariable(std::string variable_path, std::shared_ptr<property::RawData> value);
 
-    void registerAccessory(std::string name, std::shared_ptr<Accessory> accessory);
+    void registerAccessory(std::shared_ptr<Accessory> accessory);
     void deregisterAccessory(std::string name);
 
   private:

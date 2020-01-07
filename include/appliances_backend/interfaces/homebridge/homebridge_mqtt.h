@@ -3,11 +3,17 @@
 
 
 // System
+#include <memory>
 #include <string>
+#include <sstream>
 #include <unistd.h>
 
 // libmosquitto
 #include <mosquitto.h>
+
+// libproperty
+#include <property/value.hpp>
+#include <property/map.h>
 
 // Private
 #include <appliances_backend/interface_base.h>
@@ -23,13 +29,15 @@ namespace appliances_backend
     public:
       HomebridgeMqtt(std::string host, unsigned short port);
 
-      void registerAccessory(std::string name, std::shared_ptr<Accessory> accessory) override;
+      void registerAccessory(std::shared_ptr<Accessory> accessory) override;
       void deregisterAccessory(std::string name) override;
 
     protected:
       void run() override;
 
     private:
+      static std::string accessoryToJsonString(std::shared_ptr<Accessory> accessory);
+
       utilities::MqttClient mqtt_client_;
 
       void publishString(std::string topic, std::string payload);

@@ -10,16 +10,21 @@ namespace appliances_backend
     {
     }
 
-    void HomebridgeMqtt::registerAccessory(std::string name, std::shared_ptr<Accessory> accessory)
+    void HomebridgeMqtt::registerAccessory(std::shared_ptr<Accessory> accessory)
     {
-      std::cout << "Register " << name << std::endl;
+      std::cout << "Register accessory '" << accessory->getName() << "'" << std::endl;
 
-      publishString("homebridge/to/add", "{\"name\": \"" + name + "\", \"service\": \"Fan\", \"RotationSpeed\": \"level\", \"minValue\": 0, \"maxValue\": 4}");
+      publishString("homebridge/to/add", accessoryToJsonString(accessory));
+
+      if(!accessory->getCanBeSwitchedOff())
+      {
+	publishString("homebridge/to/set", "{\"name\": \"" + accessory->getName() + "\", \"service_name\": \"" + accessory->getLabel() + "\", \"characteristic\": \"On\", \"value\": true}");
+      }
     }
 
     void HomebridgeMqtt::deregisterAccessory(std::string name)
     {
-      std::cout << "Deregister " << name << std::endl;
+      std::cout << "Deregister accessory '" << name << "'" << std::endl;
 
       publishString("homebridge/to/remove", "{\"name\": \"" + name + "\"}");
     }
@@ -43,6 +48,31 @@ namespace appliances_backend
       }
 
       // TODO(fairlight1337): Unsubscribe here.
+    }
+
+    std::string HomebridgeMqtt::accessoryToJsonString(std::shared_ptr<Accessory> accessory)
+    {
+      std::shared_ptr<property::Map> data = std::make_shared<property::Map>();
+      data->set("name", std::make_shared<property::Value<std::string>>(accessory->getName()));
+
+      switch(accessory->getType())
+      {
+      case AccessoryType::Fan:
+	data->set("service", std::make_shared<property::Value<std::string>>("Fan"));
+
+	std::shared_ptr<property::Map> rotation_speed = std::make_shared<property::Map>();
+	rotation_speed->set("minValue", std::make_shared<property::Value<double>>(accessory->getMinValue()));
+	rotation_speed->set("maxValue", std::make_shared<property::Value<double>>(accessory->getMaxValue()));
+
+	data->set("RotationSpeed", rotation_speed);
+      }
+
+      data->set("service_name", std::make_shared<property::Value<std::string>>(accessory->getLabel()));
+
+      std::stringstream sts;
+      sts << std::dynamic_pointer_cast<property::RawData>(data);
+
+      return sts.str();
     }
 
     void HomebridgeMqtt::publishString(std::string topic, std::string payload)

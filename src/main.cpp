@@ -41,11 +41,14 @@ int main(int argc, char** argv)
   appliances_manager.start();
 
   AccessoriesManager accessories_manager;
-  accessories_manager.addAccessory("ventilation", AccessoryType::Fan);
+  accessories_manager.addAccessory("ventilation", "Lueftung", AccessoryType::Fan);
+  accessories_manager.getAccessory("ventilation")->setMinValue(1);
+  accessories_manager.getAccessory("ventilation")->setMaxValue(3);
+  accessories_manager.getAccessory("ventilation")->setCanBeSwitchedOff(false);
 
   for(const std::string accessory_name : accessories_manager.getAccessoryNames())
   {
-    interfaces_manager.registerAccessory(accessory_name, accessories_manager.getAccessory(accessory_name));
+    interfaces_manager.registerAccessory(accessories_manager.getAccessory(accessory_name));
   }
 
   should_run = true;

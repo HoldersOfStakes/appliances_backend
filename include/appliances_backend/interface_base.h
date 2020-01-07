@@ -15,7 +15,7 @@ namespace appliances_backend
     InterfaceBase() = default;
     virtual ~InterfaceBase() = default;
 
-    virtual void registerAccessory(std::string name, std::shared_ptr<Accessory> accessory) = 0;
+    virtual void registerAccessory(std::shared_ptr<Accessory> accessory) = 0;
     virtual void deregisterAccessory(std::string name) = 0;
   };
 }
