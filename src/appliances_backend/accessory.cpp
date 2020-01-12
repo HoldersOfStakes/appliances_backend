@@ -3,58 +3,52 @@
 
 namespace appliances_backend
 {
-  Accessory::Accessory(std::string name, std::string label, AccessoryType accessory_type)
-    : name_{ name }
-    , label_{ label }
-    , accessory_type_{ accessory_type }
-    , can_be_switched_off_{ true }
-    , min_value_{ 0.0 }
-    , max_value_{ 100.0 }
+  Accessory::Accessory(std::string key)
+    : key_{ key }
+    , primary_service_key_{ "" }
   {
   }
 
-  std::string Accessory::getName() const
+  std::string Accessory::getKey() const
   {
-    return name_;
+    return key_;
   }
 
-  std::string Accessory::getLabel() const
+  std::shared_ptr<Service> Accessory::addService(std::string key, std::string label, Service::Type type)
   {
-    return label_;
+    std::shared_ptr<Service> service = std::make_shared<Service>(key, label, type);
+    services_[key] = service;
+
+    return service;
   }
 
-  AccessoryType Accessory::getType() const
+  std::map<std::string, std::shared_ptr<Service>>::iterator Accessory::servicesBegin()
   {
-    return accessory_type_;
+    return services_.begin();
   }
 
-  void Accessory::setCanBeSwitchedOff(bool can_be_switched_off)
+  std::map<std::string, std::shared_ptr<Service>>::iterator Accessory::servicesEnd()
   {
-    can_be_switched_off_ = can_be_switched_off;
+    return services_.end();
   }
 
-  bool Accessory::getCanBeSwitchedOff() const
+  std::shared_ptr<Service> Accessory::getService(std::string key)
   {
-    return can_be_switched_off_;
+    return services_[key];
   }
 
-  void Accessory::setMinValue(double min_value)
+  std::shared_ptr<Service> Accessory::getPrimaryService()
   {
-    min_value_ = min_value;
+    return services_[primary_service_key_];
   }
 
-  double Accessory::getMinValue() const
+  void Accessory::setPrimaryServiceKey(std::string key)
   {
-    return min_value_;
+    primary_service_key_ = key;
   }
 
-  void Accessory::setMaxValue(double max_value)
+  std::string Accessory::getPrimaryServiceKey()
   {
-    max_value_ = max_value;
-  }
-
-  double Accessory::getMaxValue() const
-  {
-    return max_value_;
+    return primary_service_key_;
   }
 }

@@ -22,7 +22,7 @@ namespace appliances_backend
     virtual ~AccessoriesManager() = default;
 
     template<class ... Args>
-    void addAccessory(std::string name, Args ... args)
+    std::shared_ptr<Accessory> addAccessory(std::string name, Args ... args)
     {
       if(accessories_.find(name) != accessories_.end())
       {
@@ -30,6 +30,8 @@ namespace appliances_backend
       }
 
       accessories_[name] = std::make_shared<Accessory>(name, std::forward<Args>(args)...);
+
+      return accessories_[name];
     }
 
     std::vector<std::string> getAccessoryNames();

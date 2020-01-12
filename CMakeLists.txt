@@ -10,17 +10,15 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-add_subdirectory(3rdparty/libproperty)
-
 include_directories(
-  include
-  3rdparty/libproperty/include)
+  include)
 
 add_library(${PROJECT_NAME}
   src/appliances_backend/utilities/modbus_client.cpp
   src/appliances_backend/utilities/mqtt_client.cpp
   src/appliances_backend/appliances/helios_kwl/helios_kwl_modbus_client.cpp
   src/appliances_backend/manageable_base.cpp
+  src/appliances_backend/variable_managing_base.cpp
   src/appliances_backend/appliance_base.cpp
   src/appliances_backend/interface_base.cpp
   src/appliances_backend/appliances/helios_kwl/helios_kwl.cpp
@@ -29,6 +27,8 @@ add_library(${PROJECT_NAME}
   src/appliances_backend/interfaces_manager.cpp
   src/appliances_backend/manager_base.cpp
   src/appliances_backend/accessory.cpp
+  src/appliances_backend/service.cpp
+  src/appliances_backend/characteristic.cpp
   src/appliances_backend/accessories_manager.cpp)
 
 set(EXECUTABLE_SOURCES
@@ -43,5 +43,4 @@ target_link_libraries(${PROJECT_NAME}-bin
 target_link_libraries(${PROJECT_NAME}
   modbus
   mosquitto
-  pthread
-  property)
+  pthread)

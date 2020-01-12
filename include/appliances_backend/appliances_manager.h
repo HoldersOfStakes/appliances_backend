@@ -28,7 +28,7 @@ namespace appliances_backend
       addManageableEntity<TApplianceType>(key, std::forward<Args>(args)...);
     }
 
-    std::map<std::string, std::shared_ptr<property::RawData>> getChangedVariables();
+    std::map<std::string, nlohmann::json> getChangedVariables();
   };
 }
 

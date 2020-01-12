@@ -10,37 +10,16 @@
 #include <iostream>
 #include <mutex>
 
-// libproperty
-#include <property/value.hpp>
-
 // Private
-#include <appliances_backend/manageable_base.h>
+#include <appliances_backend/variable_managing_base.h>
 
 
 namespace appliances_backend
 {
-  class ApplianceBase : public ManageableBase
+  class ApplianceBase : public VariableManagingBase
   {
   public:
     ApplianceBase() = default;
-    virtual ~ApplianceBase() = default;
-
-    bool wasVariableChanged();
-    std::pair<std::string, std::shared_ptr<property::RawData>> getChangedVariable();
-
-  protected:
-    template<typename TValueType>
-    void setVariableState(std::string variable_path, TValueType value)
-    {
-      setRawVariableState(variable_path, std::make_shared<property::Value<TValueType>>(value));
-    }
-
-  private:
-    std::deque<std::string> changed_variables_;
-    std::map<std::string, std::shared_ptr<property::RawData>> variable_states_;
-    std::mutex variable_access_mutex_;
-
-    void setRawVariableState(std::string variable_path, std::shared_ptr<property::RawData> content);
   };
 }
 

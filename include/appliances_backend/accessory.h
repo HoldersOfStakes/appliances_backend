@@ -4,41 +4,39 @@
 
 // System
 #include <string>
+#include <list>
+#include <memory>
+
+// Private
+#include <appliances_backend/service.h>
 
 
 namespace appliances_backend
 {
-  enum class AccessoryType
-  {
-    Fan
-  };
-
   class Accessory
   {
   public:
-    Accessory(std::string name, std::string label, AccessoryType accessory_type);
+    Accessory(std::string key);
     virtual ~Accessory() = default;
 
-    std::string getName() const;
-    std::string getLabel() const;
-    AccessoryType getType() const;
+    std::string getKey() const;
 
-    void setCanBeSwitchedOff(bool can_be_switched_off);
-    bool getCanBeSwitchedOff() const;
+    std::shared_ptr<Service> addService(std::string key, std::string label, Service::Type type);
 
-    void setMinValue(double min_value);
-    double getMinValue() const;
+    std::map<std::string, std::shared_ptr<Service>>::iterator servicesBegin();
+    std::map<std::string, std::shared_ptr<Service>>::iterator servicesEnd();
 
-    void setMaxValue(double max_value);
-    double getMaxValue() const;
+    std::shared_ptr<Service> getService(std::string key);
+    std::shared_ptr<Service> getPrimaryService();
+
+    void setPrimaryServiceKey(std::string key);
+    std::string getPrimaryServiceKey();
 
   private:
-    std::string name_;
-    std::string label_;
-    AccessoryType accessory_type_;
-    bool can_be_switched_off_;
-    double min_value_;
-    double max_value_;
+    std::string key_;
+    std::string primary_service_key_;
+
+    std::map<std::string, std::shared_ptr<Service>> services_;
   };
 }
 

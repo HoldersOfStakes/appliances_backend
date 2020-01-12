@@ -12,13 +12,22 @@ namespace appliances_backend
 
     void HomebridgeMqtt::registerAccessory(std::shared_ptr<Accessory> accessory)
     {
-      std::cout << "Register accessory '" << accessory->getName() << "'" << std::endl;
+      std::cout << "Register accessory '" << accessory->getKey() << "'" << std::endl;
 
-      publishString("homebridge/to/add", accessoryToJsonString(accessory));
+      publishString("homebridge/to/add", accessoryServiceToJsonString(accessory, accessory->getPrimaryService()));
 
-      if(!accessory->getCanBeSwitchedOff())
+      for(std::map<std::string, std::shared_ptr<Service>>::iterator service_iterator = accessory->servicesBegin();
+	  service_iterator != accessory->servicesEnd(); ++service_iterator)
       {
-	publishString("homebridge/to/set", "{\"name\": \"" + accessory->getName() + "\", \"service_name\": \"" + accessory->getLabel() + "\", \"characteristic\": \"On\", \"value\": true}");
+	if(service_iterator->first != accessory->getPrimaryServiceKey())
+	{
+	  publishString("homebridge/to/add/service", accessoryServiceToJsonString(accessory, service_iterator->second));
+	}
+
+	if(service_iterator->second->hasCharacteristic(Characteristic::Type::AlwaysOn))
+	{
+	  publishString("homebridge/to/set", "{\"name\": \"" + accessory->getKey() + "\", \"service_name\": \"" + service_iterator->second->getLabel() + "\", \"characteristic\": \"On\", \"value\": true}");
+	}
       }
     }
 
@@ -31,15 +40,22 @@ namespace appliances_backend
 
     void HomebridgeMqtt::run()
     {
-      mqtt_client_.subscribe("topic_name");
+      std::string homebridge_control_in_topic = "homebridge/from/set";
+      mqtt_client_.subscribe(homebridge_control_in_topic);
 
       while(should_run_)
       {
-	if(mqtt_client_.wasDataReceivedOnTopic("topic_name"))
+	if(mqtt_client_.wasDataReceivedOnTopic(homebridge_control_in_topic))
 	{
-	  std::pair<char*, ssize_t> data = mqtt_client_.getNextReceivedDataOnTopic("topic_name");
+	  std::pair<char*, ssize_t> data = mqtt_client_.getNextReceivedDataOnTopic(homebridge_control_in_topic);
+	  std::string message = std::string(data.first, data.second);
 
-	  std::cout << "Message: " << std::string(data.first, data.second) << std::endl;
+	  std::cout << "Message: " << message << std::endl;
+
+	  nlohmann::json parsed = nlohmann::json::parse(message);
+	  std::string variable_name = parsed["name"].get<std::string>() + "." + parsed["service_name"].get<std::string>() + "." + parsed["characteristic"].get<std::string>();
+
+	  setVariableState(variable_name, parsed["value"]);
 
 	  delete[] data.first;
 	}
@@ -52,31 +68,44 @@ namespace appliances_backend
 
     std::string HomebridgeMqtt::accessoryToJsonString(std::shared_ptr<Accessory> accessory)
     {
-      std::shared_ptr<property::Map> data = std::make_shared<property::Map>();
-      data->set("name", std::make_shared<property::Value<std::string>>(accessory->getName()));
+      nlohmann::json data;
+      data["name"] = accessory->getKey();
 
-      switch(accessory->getType())
+      return data.dump();
+    }
+
+    std::string HomebridgeMqtt::accessoryServiceToJsonString(std::shared_ptr<Accessory> accessory, std::shared_ptr<Service> service)
+    {
+      nlohmann::json data;
+      data["name"] = accessory->getKey();
+
+      std::string service_type;
+
+      switch(service->getType())
       {
-      case AccessoryType::Fan:
-	data->set("service", std::make_shared<property::Value<std::string>>("Fan"));
+      case Service::Type::Fan:
+	data["service"] = "Fan";
 
-	std::shared_ptr<property::Map> rotation_speed = std::make_shared<property::Map>();
-	rotation_speed->set("minValue", std::make_shared<property::Value<double>>(accessory->getMinValue()));
-	rotation_speed->set("maxValue", std::make_shared<property::Value<double>>(accessory->getMaxValue()));
+	if(service->hasCharacteristic(Characteristic::Type::RotationSpeed))
+	{
+	  data["RotationSpeed"]["minValue"] = service->getCharacteristic(Characteristic::Type::RotationSpeed)->getProperty("min_value");
+	  data["RotationSpeed"]["maxValue"] = service->getCharacteristic(Characteristic::Type::RotationSpeed)->getProperty("max_value");
+	}
+	break;
 
-	data->set("RotationSpeed", rotation_speed);
+      default:
+       	data["service"] = "Undefined";
+	break;
       }
 
-      data->set("service_name", std::make_shared<property::Value<std::string>>(accessory->getLabel()));
+      data["service_name"] = service->getLabel();
 
-      std::stringstream sts;
-      sts << std::dynamic_pointer_cast<property::RawData>(data);
-
-      return sts.str();
+      return data.dump();
     }
 
     void HomebridgeMqtt::publishString(std::string topic, std::string payload)
     {
+      std::cout << topic << ": " << payload << std::endl;
       mqtt_client_.publish(topic, const_cast<char*>(payload.c_str()), payload.size());
     }
   }

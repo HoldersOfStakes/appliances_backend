@@ -8,12 +8,11 @@
 #include <sstream>
 #include <unistd.h>
 
+// nlohmann
+#include <nlohmann/json.hpp>
+
 // libmosquitto
 #include <mosquitto.h>
-
-// libproperty
-#include <property/value.hpp>
-#include <property/map.h>
 
 // Private
 #include <appliances_backend/interface_base.h>
@@ -37,6 +36,7 @@ namespace appliances_backend
 
     private:
       static std::string accessoryToJsonString(std::shared_ptr<Accessory> accessory);
+      static std::string accessoryServiceToJsonString(std::shared_ptr<Accessory> accessory, std::shared_ptr<Service> service);
 
       utilities::MqttClient mqtt_client_;
 

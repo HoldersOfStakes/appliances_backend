@@ -41,11 +41,15 @@ int main(int argc, char** argv)
   appliances_manager.start();
 
   AccessoriesManager accessories_manager;
-  accessories_manager.addAccessory("ventilation", "Lueftung", AccessoryType::Fan);
-  accessories_manager.getAccessory("ventilation")->setMinValue(1);
-  accessories_manager.getAccessory("ventilation")->setMaxValue(3);
-  accessories_manager.getAccessory("ventilation")->setCanBeSwitchedOff(false);
+  std::shared_ptr<Accessory> ventilation = accessories_manager.addAccessory("ventilation");
+  std::shared_ptr<Service> fan = ventilation->addService("speed", "Speed", Service::Type::Fan);
+  std::shared_ptr<Characteristic> rotation_speed = fan->addCharacteristic(Characteristic::Type::RotationSpeed);
+  rotation_speed->setProperty("min_value", 1);
+  rotation_speed->setProperty("max_value", 3);
+  fan->addCharacteristic(Characteristic::Type::AlwaysOn);
 
+  ventilation->setPrimaryServiceKey("speed");
+  
   for(const std::string accessory_name : accessories_manager.getAccessoryNames())
   {
     interfaces_manager.registerAccessory(accessories_manager.getAccessory(accessory_name));
@@ -55,11 +59,18 @@ int main(int argc, char** argv)
 
   while(should_run)
   {
-    std::map<std::string, std::shared_ptr<property::RawData>> changed_variables = appliances_manager.getChangedVariables();
+    std::map<std::string, nlohmann::json> changed_variables = appliances_manager.getChangedVariables();
 
-    for(const std::pair<std::string, std::shared_ptr<property::RawData>>& changed_variable_pair : changed_variables)
+    for(const std::pair<std::string, nlohmann::json>& changed_variable_pair : changed_variables)
     {
-      std::cout << "Changed: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
+      std::cout << "From appliance: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
+    }
+
+    changed_variables = interfaces_manager.getChangedVariables();
+
+    for(const std::pair<std::string, nlohmann::json>& changed_variable_pair : changed_variables)
+    {
+      std::cout << "From interface: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
     }
 
     usleep(50000);
