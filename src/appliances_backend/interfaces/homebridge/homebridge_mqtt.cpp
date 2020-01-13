@@ -38,6 +38,28 @@ namespace appliances_backend
       publishString("homebridge/to/remove", "{\"name\": \"" + name + "\"}");
     }
 
+    void HomebridgeMqtt::setVariable(std::list<std::string> path_parts, nlohmann::json value)
+    {
+      std::cout << "set in mqtt" << std::endl;
+
+      std::string accessory_key = path_parts.front();
+      path_parts.pop_front();
+
+      std::string service_name = path_parts.front();
+      path_parts.pop_front();
+
+      std::string characteristic_key = path_parts.front();
+      path_parts.pop_front();
+
+      nlohmann::json data;
+      data["name"] = accessory_key;
+      data["service_name"] = service_name;
+      data["characteristic"] = characteristic_key;
+      data["value"] = value;
+
+      publishString("homebridge/to/set", data.dump());
+    }
+
     void HomebridgeMqtt::run()
     {
       std::string homebridge_control_in_topic = "homebridge/from/set";

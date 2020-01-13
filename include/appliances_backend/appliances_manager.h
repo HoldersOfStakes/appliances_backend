@@ -8,6 +8,7 @@
 #include <memory>
 #include <stdexcept>
 #include <map>
+#include <list>
 #include <mutex>
 
 // Private
@@ -27,6 +28,8 @@ namespace appliances_backend
     {
       addManageableEntity<TApplianceType>(key, std::forward<Args>(args)...);
     }
+
+    void setVariable(std::list<std::string> path_parts, nlohmann::json value);
 
     std::map<std::string, nlohmann::json> getChangedVariables();
   };

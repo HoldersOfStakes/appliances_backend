@@ -31,6 +31,8 @@ namespace appliances_backend
       void registerAccessory(std::shared_ptr<Accessory> accessory) override;
       void deregisterAccessory(std::string name) override;
 
+      void setVariable(std::list<std::string> path_parts, nlohmann::json value) override;
+
     protected:
       void run() override;
 

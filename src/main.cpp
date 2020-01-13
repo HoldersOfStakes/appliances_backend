@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <csignal>
 #include <unistd.h>
+#include <list>
 
 // Private
 #include <appliances_backend/appliances/helios_kwl/helios_kwl.h>
@@ -15,6 +16,25 @@
 
 std::atomic<bool> should_run;
 
+
+std::list<std::string> split(const std::string& str, char delimeter)
+{
+  std::list<std::string> result;
+
+  std::size_t current, previous = 0;
+  current = str.find(delimeter);
+
+  while(current != std::string::npos)
+  {
+    result.push_back(str.substr(previous, current - previous));
+    previous = current + 1;
+    current = str.find(delimeter, previous);
+  }
+      
+  result.emplace_back(str.substr(previous, current - previous));
+
+  return result;
+}
 
 void signalHandler(int signal)
 {
@@ -49,6 +69,16 @@ int main(int argc, char** argv)
   fan->addCharacteristic(Characteristic::Type::AlwaysOn);
 
   ventilation->setPrimaryServiceKey("speed");
+
+  std::map<std::string, std::string> appliance_interface_mapping =
+  {
+    { "helios.fan_stage", "homebridge.ventilation.Speed.RotationSpeed" }
+  };
+  
+  std::map<std::string, std::string> interface_appliance_mapping =
+  {
+    { "homebridge.ventilation.Speed.RotationSpeed", "helios.fan_stage" }
+  };
   
   for(const std::string accessory_name : accessories_manager.getAccessoryNames())
   {
@@ -64,6 +94,11 @@ int main(int argc, char** argv)
     for(const std::pair<std::string, nlohmann::json>& changed_variable_pair : changed_variables)
     {
       std::cout << "From appliance: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
+
+      if(appliance_interface_mapping.find(changed_variable_pair.first) != appliance_interface_mapping.end())
+      {
+	interfaces_manager.setVariable(split(appliance_interface_mapping[changed_variable_pair.first], '.'), changed_variable_pair.second);
+      }
     }
 
     changed_variables = interfaces_manager.getChangedVariables();
@@ -71,6 +106,15 @@ int main(int argc, char** argv)
     for(const std::pair<std::string, nlohmann::json>& changed_variable_pair : changed_variables)
     {
       std::cout << "From interface: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
+
+      if(interface_appliance_mapping.find(changed_variable_pair.first) != interface_appliance_mapping.end())
+      {
+	appliances_manager.setVariable(split(interface_appliance_mapping[changed_variable_pair.first], '.'), changed_variable_pair.second);
+      }
+      else if(accessories_manager.isServiceAlwaysOn(changed_variable_pair.first))
+      {
+	//interfaces_manager.setVariable(changed_variable_pair.first, true);
+      }
     }
 
     usleep(50000);

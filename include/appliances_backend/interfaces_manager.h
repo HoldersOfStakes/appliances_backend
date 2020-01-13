@@ -5,6 +5,7 @@
 // System
 #include <atomic>
 #include <string>
+#include <list>
 #include <memory>
 #include <stdexcept>
 #include <map>
@@ -31,7 +32,7 @@ namespace appliances_backend
       addManageableEntity<TApplianceType>(key, std::forward<Args>(args)...);
     }
 
-    void setVariable(std::string variable_path, nlohmann::json value);
+    void setVariable(std::list<std::string> path_parts, nlohmann::json value);
 
     void registerAccessory(std::shared_ptr<Accessory> accessory);
     void deregisterAccessory(std::string name);

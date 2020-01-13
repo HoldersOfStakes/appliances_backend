@@ -37,6 +37,12 @@ namespace appliances_backend
     std::vector<std::string> getAccessoryNames();
     std::shared_ptr<Accessory> getAccessory(std::string name);
 
+    bool isServiceAlwaysOn(std::string service_path)
+    {
+      // Testing
+      return true;
+    }
+
   private:
     std::map<std::string, std::shared_ptr<Accessory>> accessories_;
   };
