@@ -6,6 +6,8 @@ namespace appliances_backend
   void ManageableBase::start()
   {
     stop();
+
+    initialize();
     
     should_run_ = true;
     worker_thread_ = std::thread(&ManageableBase::run, this);

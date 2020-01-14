@@ -20,11 +20,10 @@ namespace appliances_backend
       Fan = 0
     };
 
-    Service(std::string key, std::string label, Type type);
+    Service(std::string key, Type type);
     virtual ~Service() = default;
 
     std::string getKey() const;
-    std::string getLabel() const;
     Type getType() const;
 
     std::shared_ptr<Characteristic> addCharacteristic(Characteristic::Type type);
@@ -34,7 +33,6 @@ namespace appliances_backend
 
   private:
     std::string key_;
-    std::string label_;
     Type type_;
 
     std::map<Characteristic::Type, std::shared_ptr<Characteristic>> characteristics_;

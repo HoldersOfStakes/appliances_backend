@@ -3,26 +3,20 @@
 
 namespace appliances_backend
 {
-  void InterfacesManager::setVariable(std::list<std::string> path_parts, nlohmann::json value)
+  void InterfacesManager::setVariable(std::string interface_key, std::shared_ptr<Accessory> accessory, std::shared_ptr<Service> service, std::shared_ptr<Characteristic> characteristic, nlohmann::json value)
   {
-    if(!path_parts.empty())
+    if(!interface_key.empty() && accessory != nullptr && service != nullptr && characteristic != nullptr)
     {
-      for(const std::pair<std::string, std::shared_ptr<ManageableBase>> managed_entity_pair : managed_entities_)
+      if(managed_entities_.find(interface_key) != managed_entities_.end())
       {
-	std::shared_ptr<InterfaceBase> interface = std::dynamic_pointer_cast<InterfaceBase>(managed_entity_pair.second);
+	std::shared_ptr<InterfaceBase> interface = std::dynamic_pointer_cast<InterfaceBase>(managed_entities_[interface_key]);
       
 	if(interface == nullptr)
 	{
-	  throw std::runtime_error("Managed entity with key '" + managed_entity_pair.first + "' not of expected type.");
+	  throw std::runtime_error("Managed entity with key '" + interface_key + "' not of expected type.");
 	}
 
-	if(path_parts.front() == managed_entity_pair.first)
-	{
-	  path_parts.pop_front();
-	  //std::cout << "Set interface variable: " << variable_path << " = " << value << std::endl;
-
-	  interface->setVariable(path_parts, value);
-	}
+	interface->setVariable(accessory, service, characteristic, value);
       }
     }
   }

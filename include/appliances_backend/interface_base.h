@@ -26,7 +26,7 @@ namespace appliances_backend
     virtual void registerAccessory(std::shared_ptr<Accessory> accessory) = 0;
     virtual void deregisterAccessory(std::string name) = 0;
 
-    virtual void setVariable(std::list<std::string> path_parts, nlohmann::json value) = 0;
+    virtual void setVariable(std::shared_ptr<Accessory> accessory, std::shared_ptr<Service> service, std::shared_ptr<Characteristic> characteristic, nlohmann::json value) = 0;
   };
 }
 

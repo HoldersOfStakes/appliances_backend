@@ -18,17 +18,24 @@ namespace appliances_backend
   public:
     enum class Type
     {
-      RotationSpeed = 0,
-      AlwaysOn
+      Undefined = 0,
+      RotationSpeed,
+      On
     };
     
-    Characteristic() = default;
+    Characteristic(Type type);
+
+    Type getType();
 
     void setProperty(std::string key, nlohmann::json property);
     nlohmann::json getProperty(std::string key);
     nlohmann::json getProperty(std::string key, nlohmann::json default_content);
 
+    static Type parseTypeString(std::string type_string);
+    std::string getTypeString();
+
   private:
+    Type type_;
     std::map<std::string, nlohmann::json> properties_;
   };
 }

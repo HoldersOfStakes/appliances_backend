@@ -8,7 +8,12 @@
 #include <map>
 #include <deque>
 #include <iostream>
+#include <list>
+#include <string>
 #include <mutex>
+
+// nlohmann
+#include <nlohmann/json.hpp>
 
 // Private
 #include <appliances_backend/variable_managing_base.h>
@@ -20,6 +25,8 @@ namespace appliances_backend
   {
   public:
     ApplianceBase() = default;
+
+    virtual void setVariable(std::list<std::string> variable_parts, nlohmann::json value) = 0;
   };
 }
 

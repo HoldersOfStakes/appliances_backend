@@ -17,6 +17,9 @@
 // Private
 #include <appliances_backend/interface_base.h>
 #include <appliances_backend/manager_base.h>
+#include <appliances_backend/accessory.h>
+#include <appliances_backend/service.h>
+#include <appliances_backend/characteristic.h>
 
 
 namespace appliances_backend
@@ -32,7 +35,7 @@ namespace appliances_backend
       addManageableEntity<TApplianceType>(key, std::forward<Args>(args)...);
     }
 
-    void setVariable(std::list<std::string> path_parts, nlohmann::json value);
+    void setVariable(std::string interface_key, std::shared_ptr<Accessory> accessory, std::shared_ptr<Service> service, std::shared_ptr<Characteristic> characteristic, nlohmann::json value);
 
     void registerAccessory(std::shared_ptr<Accessory> accessory);
     void deregisterAccessory(std::string name);

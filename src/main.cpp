@@ -12,6 +12,7 @@
 #include <appliances_backend/appliances_manager.h>
 #include <appliances_backend/interfaces_manager.h>
 #include <appliances_backend/accessories_manager.h>
+#include <appliances_backend/mapper.h>
 
 
 std::atomic<bool> should_run;
@@ -62,22 +63,29 @@ int main(int argc, char** argv)
 
   AccessoriesManager accessories_manager;
   std::shared_ptr<Accessory> ventilation = accessories_manager.addAccessory("ventilation");
-  std::shared_ptr<Service> fan = ventilation->addService("speed", "Speed", Service::Type::Fan);
+  std::shared_ptr<Service> fan = ventilation->addService("Speed", Service::Type::Fan);
   std::shared_ptr<Characteristic> rotation_speed = fan->addCharacteristic(Characteristic::Type::RotationSpeed);
   rotation_speed->setProperty("min_value", 1);
-  rotation_speed->setProperty("max_value", 3);
-  fan->addCharacteristic(Characteristic::Type::AlwaysOn);
+  rotation_speed->setProperty("max_value", 4);
+  std::shared_ptr<Characteristic> on = fan->addCharacteristic(Characteristic::Type::On);
+  on->setProperty("always_on", true);
 
-  ventilation->setPrimaryServiceKey("speed");
+  ventilation->setPrimaryServiceKey("Speed");
+
+  Mapper mapper;
+  mapper.mapEntities("helios.fan_stage", "homebridge.ventilation.Speed.RotationSpeed", true);
+  mapper.mapEntities("helios.on", "homebridge.ventilation.Speed.On", true);
 
   std::map<std::string, std::string> appliance_interface_mapping =
   {
-    { "helios.fan_stage", "homebridge.ventilation.Speed.RotationSpeed" }
+    { "helios.fan_stage", "homebridge.ventilation.Speed.RotationSpeed" },
+    { "helios.on", "homebridge.ventilation.Speed.On" }
   };
   
   std::map<std::string, std::string> interface_appliance_mapping =
   {
-    { "homebridge.ventilation.Speed.RotationSpeed", "helios.fan_stage" }
+    { "homebridge.ventilation.Speed.RotationSpeed", "helios.fan_stage" },
+    { "homebridge.ventilation.Speed.On", "helios.on" }
   };
   
   for(const std::string accessory_name : accessories_manager.getAccessoryNames())
@@ -95,9 +103,42 @@ int main(int argc, char** argv)
     {
       std::cout << "From appliance: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
 
-      if(appliance_interface_mapping.find(changed_variable_pair.first) != appliance_interface_mapping.end())
+      for(const std::string& mapped_entity : mapper.getMappedEntities(changed_variable_pair.first))
       {
-	interfaces_manager.setVariable(split(appliance_interface_mapping[changed_variable_pair.first], '.'), changed_variable_pair.second);
+	std::list<std::string> path_parts = split(mapped_entity, '.');
+
+	if(path_parts.size() == 4)
+	{
+	  std::string interface_key = path_parts.front();
+	  path_parts.pop_front();
+	  std::string accessory_key = path_parts.front();
+	  path_parts.pop_front();
+	  std::string service_key = path_parts.front();
+	  path_parts.pop_front();
+	  std::string characteristic_key = path_parts.front();
+
+	  std::shared_ptr<Accessory> accessory = accessories_manager.getAccessory(accessory_key);
+
+	  if(accessory != nullptr)
+	  {
+	    std::shared_ptr<Service> service = accessory->getService(service_key);
+
+	    if(service != nullptr)
+	    {
+	      Characteristic::Type characteristic_type = Characteristic::parseTypeString(characteristic_key);
+
+	      if(service->hasCharacteristic(characteristic_type))
+	      {
+		std::shared_ptr<Characteristic> characteristic = service->getCharacteristic(characteristic_type);
+	      
+		if(characteristic != nullptr)
+		{
+		  interfaces_manager.setVariable(interface_key, accessory, service, characteristic, changed_variable_pair.second);
+		}
+	      }
+	    }
+	  }
+	}
       }
     }
 
@@ -107,13 +148,65 @@ int main(int argc, char** argv)
     {
       std::cout << "From interface: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
 
-      if(interface_appliance_mapping.find(changed_variable_pair.first) != interface_appliance_mapping.end())
+      bool was_handled = false;
       {
-	appliances_manager.setVariable(split(interface_appliance_mapping[changed_variable_pair.first], '.'), changed_variable_pair.second);
+	std::list<std::string> path_parts = split(changed_variable_pair.first, '.');
+
+	if(path_parts.size() == 4)
+	{
+	  std::string interface_key = path_parts.front();
+	  path_parts.pop_front();
+	  std::string accessory_key = path_parts.front();
+	  path_parts.pop_front();
+	  std::string service_key = path_parts.front();
+	  path_parts.pop_front();
+	  std::string characteristic_key = path_parts.front();
+
+	  std::cout << interface_key << ", " << accessory_key << ", " << service_key << ", " << characteristic_key << ": " << changed_variable_pair.second << std::endl;
+
+	  std::shared_ptr<Accessory> accessory = accessories_manager.getAccessory(accessory_key);
+
+	  if(accessory != nullptr)
+	  {
+	    std::shared_ptr<Service> service = accessory->getService(service_key);
+
+	    if(service != nullptr)
+	    {
+	      Characteristic::Type characteristic_type = Characteristic::parseTypeString(characteristic_key);
+
+	      if(service->hasCharacteristic(characteristic_type))
+	      {
+		std::shared_ptr<Characteristic> characteristic = service->getCharacteristic(characteristic_type);
+	      
+		if(characteristic != nullptr)
+		{
+		  if(characteristic_type == Characteristic::Type::On &&
+		     characteristic->getProperty("always_on", false) == true)
+		  {
+		    interfaces_manager.setVariable(interface_key, accessory, service, characteristic, true);
+		    was_handled = true;
+		  }
+		}
+	      }
+	    }
+	  }
+	}
       }
-      else if(accessories_manager.isServiceAlwaysOn(changed_variable_pair.first))
+
+      if(!was_handled)
       {
-	//interfaces_manager.setVariable(changed_variable_pair.first, true);
+	for(const std::string& mapped_entity : mapper.getMappedEntities(changed_variable_pair.first))
+	{
+	  std::list<std::string> path_parts = split(mapped_entity, '.');
+
+	  if(path_parts.size() > 0)
+	  {
+	    std::string appliance_key = path_parts.front();
+	    path_parts.pop_front();
+	    
+	    appliances_manager.setVariable(appliance_key, path_parts, changed_variable_pair.second);
+	  }
+	}
       }
     }
 

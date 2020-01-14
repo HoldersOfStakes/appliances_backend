@@ -24,9 +24,10 @@ namespace appliances_backend
 	  publishString("homebridge/to/add/service", accessoryServiceToJsonString(accessory, service_iterator->second));
 	}
 
-	if(service_iterator->second->hasCharacteristic(Characteristic::Type::AlwaysOn))
+	if(service_iterator->second->hasCharacteristic(Characteristic::Type::On) &&
+	   service_iterator->second->getCharacteristic(Characteristic::Type::On)->getProperty("always_on", false) == true)
 	{
-	  publishString("homebridge/to/set", "{\"name\": \"" + accessory->getKey() + "\", \"service_name\": \"" + service_iterator->second->getLabel() + "\", \"characteristic\": \"On\", \"value\": true}");
+	  publishString("homebridge/to/set", "{\"name\": \"" + accessory->getKey() + "\", \"service_name\": \"" + service_iterator->second->getKey() + "\", \"characteristic\": \"On\", \"value\": true}");
 	}
       }
     }
@@ -38,26 +39,34 @@ namespace appliances_backend
       publishString("homebridge/to/remove", "{\"name\": \"" + name + "\"}");
     }
 
-    void HomebridgeMqtt::setVariable(std::list<std::string> path_parts, nlohmann::json value)
+    void HomebridgeMqtt::setVariable(std::shared_ptr<Accessory> accessory, std::shared_ptr<Service> service, std::shared_ptr<Characteristic> characteristic, nlohmann::json value)
     {
-      std::cout << "set in mqtt" << std::endl;
-
-      std::string accessory_key = path_parts.front();
-      path_parts.pop_front();
-
-      std::string service_name = path_parts.front();
-      path_parts.pop_front();
-
-      std::string characteristic_key = path_parts.front();
-      path_parts.pop_front();
-
       nlohmann::json data;
-      data["name"] = accessory_key;
-      data["service_name"] = service_name;
-      data["characteristic"] = characteristic_key;
+      data["name"] = accessory->getKey();
+      data["service_name"] = service->getKey();
+      data["characteristic"] = characteristic->getTypeString();
       data["value"] = value;
 
+      setVariableState(data["name"].get<std::string>() + "." + data["service_name"].get<std::string>() + "." + data["characteristic"].get<std::string>(), value);
+
       publishString("homebridge/to/set", data.dump());
+    }
+
+    void HomebridgeMqtt::initialize()
+    {
+      while(true)
+      {
+	try
+	{
+	  std::cout << "Connecting to MQTT" << std::endl;
+	  mqtt_client_.connect();
+	  break;
+	}
+	catch(const std::runtime_error& error)
+	{
+	  std::cout << error.what() << std::endl;
+	}
+      }
     }
 
     void HomebridgeMqtt::run()
@@ -120,7 +129,7 @@ namespace appliances_backend
 	break;
       }
 
-      data["service_name"] = service->getLabel();
+      data["service_name"] = service->getKey();
 
       return data.dump();
     }

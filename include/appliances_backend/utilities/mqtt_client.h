@@ -28,6 +28,8 @@ namespace appliances_backend
       MqttClient(std::string host, unsigned short port);
       virtual ~MqttClient();
 
+      void connect();
+
       void publish(std::string topic, char* data, ssize_t length);
       void subscribe(std::string topic);
 
@@ -42,6 +44,8 @@ namespace appliances_backend
       static unsigned int usage_counter_;
       static std::mutex global_initialization_access_;
 
+      std::string host_;
+      unsigned short port_;
       struct mosquitto* mosquitto_handle_;
       std::map<std::string, std::deque<std::pair<char*, ssize_t>>> received_messages_;
       std::mutex received_messages_access_;

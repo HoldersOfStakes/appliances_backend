@@ -14,9 +14,9 @@ namespace appliances_backend
     return key_;
   }
 
-  std::shared_ptr<Service> Accessory::addService(std::string key, std::string label, Service::Type type)
+  std::shared_ptr<Service> Accessory::addService(std::string key, Service::Type type)
   {
-    std::shared_ptr<Service> service = std::make_shared<Service>(key, label, type);
+    std::shared_ptr<Service> service = std::make_shared<Service>(key, type);
     services_[key] = service;
 
     return service;

@@ -29,6 +29,7 @@ add_library(${PROJECT_NAME}
   src/appliances_backend/accessory.cpp
   src/appliances_backend/service.cpp
   src/appliances_backend/characteristic.cpp
+  src/appliances_backend/mapper.cpp
   src/appliances_backend/accessories_manager.cpp)
 
 set(EXECUTABLE_SOURCES

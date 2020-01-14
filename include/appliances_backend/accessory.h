@@ -21,7 +21,7 @@ namespace appliances_backend
 
     std::string getKey() const;
 
-    std::shared_ptr<Service> addService(std::string key, std::string label, Service::Type type);
+    std::shared_ptr<Service> addService(std::string key, Service::Type type);
 
     std::map<std::string, std::shared_ptr<Service>>::iterator servicesBegin();
     std::map<std::string, std::shared_ptr<Service>>::iterator servicesEnd();

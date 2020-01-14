@@ -22,6 +22,7 @@ namespace appliances_backend
     std::atomic<bool> should_run_;
     std::thread worker_thread_;
 
+    virtual void initialize() {}
     virtual void run() = 0;
   };
 }

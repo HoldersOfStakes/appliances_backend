@@ -35,35 +35,9 @@ namespace appliances_backend
 
 
     MqttClient::MqttClient(std::string host, unsigned short port)
+      : host_{ host }
+      , port_{ port }
     {
-      using namespace std::chrono_literals;
-
-      initialize();
-
-      mosquitto_handle_ = mosquitto_new(nullptr, true, this);
-      mosquitto_connect_callback_set(mosquitto_handle_, handleMqttConnectWrapper);
-      mosquitto_message_callback_set(mosquitto_handle_, handleMqttMessageWrapper);
-      mosquitto_log_callback_set(mosquitto_handle_, handleMqttLogWrapper);
-
-      mosquitto_loop_start(mosquitto_handle_);
-
-      int result = mosquitto_connect(mosquitto_handle_, host.c_str(), port, 1);
-      if(result != MOSQ_ERR_SUCCESS)
-      {
-	throw std::runtime_error(std::string("Failed to start connecting to MQTT: ") + mosquitto_strerror(result));
-      }
-
-      // Waiting for the connection to be established or failed.
-      std::unique_lock<std::mutex> connection_established_lock(connection_established_mutex_);
-      if(connection_established_condition_.wait_for(connection_established_lock, 15s) == std::cv_status::timeout)
-      {
-	throw std::runtime_error(std::string("Timeout while connecting to MQTT: ") + mosquitto_strerror(connection_return_code_));
-      }
-      
-      if(connection_return_code_ != 0)
-      {
-	throw std::runtime_error(std::string("Failed to connect to MQTT: ") + mosquitto_strerror(connection_return_code_));
-      }
     }
 
     MqttClient::~MqttClient()
@@ -81,6 +55,38 @@ namespace appliances_backend
 	{
 	  delete[] received_message_entry.first;
 	}
+      }
+    }
+
+    void MqttClient::connect()
+    {
+      using namespace std::chrono_literals;
+
+      initialize();
+
+      mosquitto_handle_ = mosquitto_new(nullptr, true, this);
+      mosquitto_connect_callback_set(mosquitto_handle_, handleMqttConnectWrapper);
+      mosquitto_message_callback_set(mosquitto_handle_, handleMqttMessageWrapper);
+      mosquitto_log_callback_set(mosquitto_handle_, handleMqttLogWrapper);
+
+      mosquitto_loop_start(mosquitto_handle_);
+
+      int result = mosquitto_connect(mosquitto_handle_, host_.c_str(), port_, 1);
+      if(result != MOSQ_ERR_SUCCESS)
+      {
+	throw std::runtime_error(std::string("Failed to start connecting to MQTT: ") + mosquitto_strerror(result));
+      }
+
+      // Waiting for the connection to be established or failed.
+      std::unique_lock<std::mutex> connection_established_lock(connection_established_mutex_);
+      if(connection_established_condition_.wait_for(connection_established_lock, 15s) == std::cv_status::timeout)
+      {
+	throw std::runtime_error(std::string("Timeout while connecting to MQTT: ") + mosquitto_strerror(connection_return_code_));
+      }
+      
+      if(connection_return_code_ != 0)
+      {
+	throw std::runtime_error(std::string("Failed to connect to MQTT: ") + mosquitto_strerror(connection_return_code_));
       }
     }
 

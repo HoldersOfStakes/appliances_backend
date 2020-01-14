@@ -4,6 +4,7 @@
 
 // System
 #include <string>
+#include <iostream>
 #include <stdexcept>
 
 // libmodbus

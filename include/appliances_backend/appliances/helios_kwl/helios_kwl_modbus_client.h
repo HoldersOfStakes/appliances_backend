@@ -33,10 +33,11 @@ namespace appliances_backend
 	((uint8_t*)value_to_write)[i + (i % 2 ? -1 : 1)] = static_cast<uint8_t>(variable.at(i));
       }
 
-      value_to_write[register_count - 1] = 0;
+      value_to_write[register_count - 1] = 0x00;
+
+      printHex(value_to_write, register_count);
 
       modbus_client_.writeToRegister(1, register_count, value_to_write);
-      printHex(value_to_write, register_count);
     }
 
     uint16_t* readVariable(std::string variable, unsigned int register_count);

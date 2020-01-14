@@ -29,7 +29,7 @@ namespace appliances_backend
       addManageableEntity<TApplianceType>(key, std::forward<Args>(args)...);
     }
 
-    void setVariable(std::list<std::string> path_parts, nlohmann::json value);
+    void setVariable(std::string appliance_key, std::list<std::string> variable_parts, nlohmann::json value);
 
     std::map<std::string, nlohmann::json> getChangedVariables();
   };

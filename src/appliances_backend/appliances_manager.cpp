@@ -3,18 +3,18 @@
 
 namespace appliances_backend
 {
-  void AppliancesManager::setVariable(std::list<std::string> path_parts, nlohmann::json value)
+  void AppliancesManager::setVariable(std::string appliance_key, std::list<std::string> variable_parts, nlohmann::json value)
   {
-    for(const std::pair<std::string, std::shared_ptr<ManageableBase>> managed_entity_pair : managed_entities_)
+    if(managed_entities_.find(appliance_key) != managed_entities_.end())
     {
-      std::shared_ptr<ApplianceBase> appliance = std::dynamic_pointer_cast<ApplianceBase>(managed_entity_pair.second);
+      std::shared_ptr<ApplianceBase> appliance = std::dynamic_pointer_cast<ApplianceBase>(managed_entities_[appliance_key]);
       
       if(appliance == nullptr)
       {
-	throw std::runtime_error("Managed entity with key '" + managed_entity_pair.first + "' not of expected type.");
+	throw std::runtime_error("Managed entity with key '" + appliance_key + "' not of expected type.");
       }
 
-      //std::cout << "Set appliance variable: " << variable_path << " = " << value << std::endl;
+      appliance->setVariable(variable_parts, value);
     }
   }
 

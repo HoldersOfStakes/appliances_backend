@@ -3,9 +3,8 @@
 
 namespace appliances_backend
 {
-  Service::Service(std::string key, std::string label, Type type)
+  Service::Service(std::string key, Type type)
     : key_{ key }
-    , label_{ label }
     , type_{ type }
   {
   }
@@ -15,11 +14,6 @@ namespace appliances_backend
     return key_;
   }
 
-  std::string Service::getLabel() const
-  {
-    return label_;
-  }
-
   Service::Type Service::getType() const
   {
     return type_;
@@ -27,7 +21,7 @@ namespace appliances_backend
   
   std::shared_ptr<Characteristic> Service::addCharacteristic(Characteristic::Type type)
   {
-    std::shared_ptr<Characteristic> characteristic = std::make_shared<Characteristic>();
+    std::shared_ptr<Characteristic> characteristic = std::make_shared<Characteristic>(type);
     characteristics_[type] = characteristic;
 
     return characteristic;

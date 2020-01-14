@@ -4,7 +4,13 @@
 
 // System
 #include <string>
+#include <list>
+#include <iostream>
+#include <mutex>
 #include <unistd.h>
+
+// nlohmann
+#include <nlohmann/json.hpp>
 
 // Private
 #include <appliances_backend/appliance_base.h>
@@ -25,10 +31,13 @@ namespace appliances_backend
 
       void run() override;
 
+      void setVariable(std::list<std::string> variable_parts, nlohmann::json value) override;
+
     private:
       HeliosKwlModbusClient helios_kwl_modbus_client_;
 
       unsigned int fan_stage_;
+      std::mutex modbus_access_;
     };
   }
 }
