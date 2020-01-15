@@ -7,7 +7,6 @@ namespace appliances_backend
   {
     HeliosKwl::HeliosKwl(std::string host)
       : helios_kwl_modbus_client_{ host }
-      , fan_stage_{ 0 }
     {
     }
 
@@ -23,12 +22,27 @@ namespace appliances_backend
       helios_kwl_modbus_client_.writeFanStage(fan_stage);
     }
 
+    double HeliosKwl::getTemperatureSupplyAir()
+    {
+      std::lock_guard<std::mutex> lock(modbus_access_);
+      return helios_kwl_modbus_client_.readTemperatureSupplyAir();
+    }
+
+    double HeliosKwl::getTemperatureExtractAir()
+    {
+      std::lock_guard<std::mutex> lock(modbus_access_);
+      return helios_kwl_modbus_client_.readTemperatureExtractAir();
+    }
+
     void HeliosKwl::run()
     {
       while(should_run_)
       {
 	setVariableState("fan_stage", getFanStage());
-
+	usleep(100000);
+	setVariableState("temperature_supply_air", getTemperatureSupplyAir());
+	usleep(100000);
+	setVariableState("temperature_extract_air", getTemperatureExtractAir());
 	usleep(100000);
       }
     }

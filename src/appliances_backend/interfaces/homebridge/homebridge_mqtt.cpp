@@ -124,6 +124,10 @@ namespace appliances_backend
 	}
 	break;
 
+      case Service::Type::TemperatureSensor:
+	data["service"] = "TemperatureSensor";
+	break;
+
       default:
        	data["service"] = "Undefined";
 	break;

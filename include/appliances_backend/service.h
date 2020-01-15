@@ -17,7 +17,8 @@ namespace appliances_backend
   public:
     enum class Type
     {
-      Fan = 0
+      Fan = 0,
+      TemperatureSensor
     };
 
     Service(std::string key, Type type);

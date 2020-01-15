@@ -19,6 +19,9 @@ namespace appliances_backend
 
     unsigned int readFanStage();
     void writeFanStage(unsigned int fan_stage);
+
+    double readTemperatureSupplyAir();
+    double readTemperatureExtractAir();
     
     template<typename TValueType>
     void writeVariable(std::string variable, TValueType value, unsigned int register_count)
@@ -46,6 +49,7 @@ namespace appliances_backend
     utilities::ModbusClient modbus_client_;
 
     void printHex(uint16_t* data, ssize_t length);
+    double readTemperature(std::string variable);
   };
 }
 

@@ -29,14 +29,15 @@ namespace appliances_backend
       unsigned int getFanStage();
       void setFanStage(unsigned int fan_stage);
 
+      double getTemperatureSupplyAir();
+      double getTemperatureExtractAir();
+
       void run() override;
 
       void setVariable(std::list<std::string> variable_parts, nlohmann::json value) override;
 
     private:
       HeliosKwlModbusClient helios_kwl_modbus_client_;
-
-      unsigned int fan_stage_;
       std::mutex modbus_access_;
     };
   }

@@ -62,32 +62,26 @@ int main(int argc, char** argv)
   appliances_manager.start();
 
   AccessoriesManager accessories_manager;
-  std::shared_ptr<Accessory> ventilation = accessories_manager.addAccessory("ventilation");
-  std::shared_ptr<Service> fan = ventilation->addService("Speed", Service::Type::Fan);
+  std::shared_ptr<Accessory> ventilation = accessories_manager.addAccessory("Lueftung");
+  std::shared_ptr<Service> fan = ventilation->addService("Luefter", Service::Type::Fan);
   std::shared_ptr<Characteristic> rotation_speed = fan->addCharacteristic(Characteristic::Type::RotationSpeed);
   rotation_speed->setProperty("min_value", 1);
   rotation_speed->setProperty("max_value", 4);
   std::shared_ptr<Characteristic> on = fan->addCharacteristic(Characteristic::Type::On);
   on->setProperty("always_on", true);
+  std::shared_ptr<Service> supply_air_temperature = ventilation->addService("Zuluft", Service::Type::TemperatureSensor);
+  supply_air_temperature->addCharacteristic(Characteristic::Type::CurrentTemperature);
+  std::shared_ptr<Service> extract_air_temperature = ventilation->addService("Abluft", Service::Type::TemperatureSensor);
+  extract_air_temperature->addCharacteristic(Characteristic::Type::CurrentTemperature);
 
-  ventilation->setPrimaryServiceKey("Speed");
+  ventilation->setPrimaryServiceKey("Luefter");
 
   Mapper mapper;
-  mapper.mapEntities("helios.fan_stage", "homebridge.ventilation.Speed.RotationSpeed", true);
-  mapper.mapEntities("helios.on", "homebridge.ventilation.Speed.On", true);
+  mapper.mapEntities("helios.fan_stage", "homebridge.Lueftung.Luefter.RotationSpeed", true);
+  mapper.mapEntities("helios.on", "homebridge.Lueftung.Luefter.On", true);
+  mapper.mapEntities("helios.temperature_supply_air", "homebridge.Lueftung.Zuluft.CurrentTemperature", true);
+  mapper.mapEntities("helios.temperature_extract_air", "homebridge.Lueftung.Abluft.CurrentTemperature", true);
 
-  std::map<std::string, std::string> appliance_interface_mapping =
-  {
-    { "helios.fan_stage", "homebridge.ventilation.Speed.RotationSpeed" },
-    { "helios.on", "homebridge.ventilation.Speed.On" }
-  };
-  
-  std::map<std::string, std::string> interface_appliance_mapping =
-  {
-    { "homebridge.ventilation.Speed.RotationSpeed", "helios.fan_stage" },
-    { "homebridge.ventilation.Speed.On", "helios.on" }
-  };
-  
   for(const std::string accessory_name : accessories_manager.getAccessoryNames())
   {
     interfaces_manager.registerAccessory(accessories_manager.getAccessory(accessory_name));
@@ -161,8 +155,6 @@ int main(int argc, char** argv)
 	  std::string service_key = path_parts.front();
 	  path_parts.pop_front();
 	  std::string characteristic_key = path_parts.front();
-
-	  std::cout << interface_key << ", " << accessory_key << ", " << service_key << ", " << characteristic_key << ": " << changed_variable_pair.second << std::endl;
 
 	  std::shared_ptr<Accessory> accessory = accessories_manager.getAccessory(accessory_key);
 

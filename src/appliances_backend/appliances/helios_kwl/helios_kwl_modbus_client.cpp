@@ -30,6 +30,34 @@ namespace appliances_backend
     writeVariable("v00102", fan_stage, 5);
   }
 
+  double HeliosKwlModbusClient::readTemperatureSupplyAir()
+  {
+    return readTemperature("v00105");
+  }
+
+  double HeliosKwlModbusClient::readTemperatureExtractAir()
+  {
+    return readTemperature("v00107");
+  }
+
+  double HeliosKwlModbusClient::readTemperature(std::string variable)
+  {
+    uint16_t* temperature_data = readVariable(variable, 8);
+    char raw_temperature[9];
+
+    for(unsigned int i = 7; i < 16; ++i)
+    {
+      raw_temperature[i - 7] = ((uint8_t*)temperature_data)[i + (i % 2 ? -1 : 1)];
+    }
+
+    delete[] temperature_data;
+
+    double temperature;
+    sscanf(raw_temperature, "%lf", &temperature);
+
+    return temperature;
+  }
+
   uint16_t* HeliosKwlModbusClient::readVariable(std::string variable, unsigned int count)
   {
     // Encode variable name to read as uint16_t.

@@ -20,7 +20,8 @@ namespace appliances_backend
     {
       Undefined = 0,
       RotationSpeed,
-      On
+      On,
+      CurrentTemperature
     };
     
     Characteristic(Type type);

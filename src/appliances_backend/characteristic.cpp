@@ -45,6 +45,10 @@ namespace appliances_backend
     {
       type = Type::On;
     }
+    else if(type_string == "CurrentTemperature")
+    {
+      type = Type::CurrentTemperature;
+    }
     else
     {
       type = Type::Undefined;
@@ -63,6 +67,10 @@ namespace appliances_backend
 
     case Type::On:
       return "On";
+      break;
+
+    case Type::CurrentTemperature:
+      return "CurrentTemperature";
       break;
 
     case Type::Undefined:
