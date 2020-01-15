@@ -4,6 +4,7 @@
 
 // System
 #include <iostream>
+#include <unistd.h>
 
 // Private
 #include <appliances_backend/utilities/modbus_client.h>

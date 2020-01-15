@@ -18,7 +18,11 @@ namespace appliances_backend
     if(should_run_)
     {
       should_run_ = false;
-      worker_thread_.join();
+
+      if(worker_thread_.joinable())
+      {
+	worker_thread_.join();
+      }
     }
   }
 }

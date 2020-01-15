@@ -6,7 +6,7 @@ namespace appliances_backend
   namespace appliances
   {
     HeliosKwl::HeliosKwl(std::string host)
-      : helios_kwl_modbus_client_{ host }
+      : helios_kwl_modbus_client_{ HeliosKwlModbusClient(host) }
     {
     }
 

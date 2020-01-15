@@ -27,7 +27,18 @@ namespace appliances_backend
 
   void HeliosKwlModbusClient::writeFanStage(unsigned int fan_stage)
   {
-    writeVariable("v00102", fan_stage, 5);
+    while(true)
+    {
+      try
+      {
+	writeVariable("v00102", fan_stage, 5);
+	break;
+      }
+      catch(...)
+      {
+	usleep(100000);
+      }
+    }
   }
 
   double HeliosKwlModbusClient::readTemperatureSupplyAir()
