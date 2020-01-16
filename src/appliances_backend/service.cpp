@@ -41,4 +41,18 @@ namespace appliances_backend
   {
     return getCharacteristic(type) != nullptr;
   }
+
+  Service::Type Service::parseTypeString(std::string type_string)
+  {
+    if(type_string == "Fan")
+    {
+      return Service::Type::Fan;
+    }
+    else if(type_string == "TemperatureSensor")
+    {
+      return Service::Type::TemperatureSensor;
+    }
+
+    return Service::Type::Undefined;
+  }
 }

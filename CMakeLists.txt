@@ -45,4 +45,5 @@ target_link_libraries(${PROJECT_NAME}-bin
 target_link_libraries(${PROJECT_NAME}
   modbus
   mosquitto
-  pthread)
+  pthread
+  config++)

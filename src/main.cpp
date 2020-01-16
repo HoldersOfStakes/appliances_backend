@@ -32,7 +32,7 @@ int main(int argc, char** argv)
   std::signal(SIGINT, signalHandler);
   std::signal(SIGTERM, signalHandler);
 
-  std::string config_file_path = "";
+  std::string config_file_path = "../configs/default.cfg";
 
   backend_ = std::make_unique<appliances_backend::Backend>(config_file_path);
 

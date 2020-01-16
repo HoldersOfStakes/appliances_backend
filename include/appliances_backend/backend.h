@@ -5,6 +5,10 @@
 // System
 #include <list>
 #include <string>
+#include <unistd.h>
+
+// libconfig++
+#include <libconfig.h++>
 
 // Private
 #include <appliances_backend/appliances/helios_kwl/helios_kwl.h>
@@ -31,6 +35,7 @@ namespace appliances_backend
 
   private:
     static std::list<std::string> split(const std::string& str, char delimeter);
+    static bool fileExists(std::string file_path);
 
     std::atomic<bool> should_run_;
     std::string config_file_path_;
@@ -40,6 +45,7 @@ namespace appliances_backend
     Mapper mapper_;
 
     void loadConfiguration(std::string config_file_path);
+    void loadAccessory(const libconfig::Setting& accessory_description);
   };
 }
 

@@ -17,7 +17,8 @@ namespace appliances_backend
   public:
     enum class Type
     {
-      Fan = 0,
+      Undefined = 0,
+      Fan,
       TemperatureSensor
     };
 
@@ -31,6 +32,8 @@ namespace appliances_backend
     std::shared_ptr<Characteristic> getCharacteristic(Characteristic::Type type);
     void removeCharacteristic(Characteristic::Type type);
     bool hasCharacteristic(Characteristic::Type type);
+
+    static Type parseTypeString(std::string type_string);
 
   private:
     std::string key_;

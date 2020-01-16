@@ -177,28 +177,191 @@ namespace appliances_backend
     return result;
   }
 
+  bool Backend::fileExists(std::string file_path)
+  {
+    return access(file_path.c_str(), F_OK) != -1;
+  }
+
   void Backend::loadConfiguration(std::string config_file_path)
   {
-    interfaces_manager_.addInterface<interfaces::HomebridgeMqtt>("homebridge", "192.168.100.2", 1883);
-    appliances_manager_.addAppliance<appliances::HeliosKwl>("helios", "192.168.100.14");
+    if(fileExists(config_file_path))
+    {
+      std::cout << "Loading file '" << config_file_path << "'" << std::endl;
 
-    std::shared_ptr<Accessory> ventilation = accessories_manager_.addAccessory("Lueftung");
-    std::shared_ptr<Service> fan = ventilation->addService("Luefter", Service::Type::Fan);
-    std::shared_ptr<Characteristic> rotation_speed = fan->addCharacteristic(Characteristic::Type::RotationSpeed);
-    rotation_speed->setProperty("min_value", 1);
-    rotation_speed->setProperty("max_value", 4);
-    std::shared_ptr<Characteristic> on = fan->addCharacteristic(Characteristic::Type::On);
-    on->setProperty("always_on", true);
-    std::shared_ptr<Service> supply_air_temperature = ventilation->addService("Zuluft", Service::Type::TemperatureSensor);
-    supply_air_temperature->addCharacteristic(Characteristic::Type::CurrentTemperature);
-    std::shared_ptr<Service> extract_air_temperature = ventilation->addService("Abluft", Service::Type::TemperatureSensor);
-    extract_air_temperature->addCharacteristic(Characteristic::Type::CurrentTemperature);
+      using namespace libconfig;
 
-    ventilation->setPrimaryServiceKey("Luefter");
+      Config cfg;
+      cfg.readFile(config_file_path.c_str());
 
-    mapper_.mapEntities("helios.fan_stage", "homebridge.Lueftung.Luefter.RotationSpeed", true);
-    mapper_.mapEntities("helios.on", "homebridge.Lueftung.Luefter.On", true);
-    mapper_.mapEntities("helios.temperature_supply_air", "homebridge.Lueftung.Zuluft.CurrentTemperature", true);
-    mapper_.mapEntities("helios.temperature_extract_air", "homebridge.Lueftung.Abluft.CurrentTemperature", true);
+      const Setting& root = cfg.getRoot();
+
+      try
+      {
+	const Setting& accessories = root["accessories"];
+	size_t accessories_count = accessories.getLength();
+
+	for(unsigned int accessory_index = 0; accessory_index < accessories_count; ++accessory_index)
+	{
+	  const Setting& accessory = accessories[accessory_index];
+	  loadAccessory(accessory);
+	}
+      }
+      catch(const SettingNotFoundException& ex)
+      {
+	// Ignore.
+      }
+
+      /*interfaces_manager_.addInterface<interfaces::HomebridgeMqtt>("homebridge", "192.168.100.2", 1883);
+      appliances_manager_.addAppliance<appliances::HeliosKwl>("helios", "192.168.100.14");
+
+      std::shared_ptr<Accessory> ventilation = accessories_manager_.addAccessory("Lueftung");
+      std::shared_ptr<Service> fan = ventilation->addService("Luefter", Service::Type::Fan);
+      std::shared_ptr<Characteristic> rotation_speed = fan->addCharacteristic(Characteristic::Type::RotationSpeed);
+      rotation_speed->setProperty("min_value", 1);
+      rotation_speed->setProperty("max_value", 4);
+      std::shared_ptr<Characteristic> on = fan->addCharacteristic(Characteristic::Type::On);
+      on->setProperty("always_on", true);
+      std::shared_ptr<Service> supply_air_temperature = ventilation->addService("Zuluft", Service::Type::TemperatureSensor);
+      supply_air_temperature->addCharacteristic(Characteristic::Type::CurrentTemperature);
+      std::shared_ptr<Service> extract_air_temperature = ventilation->addService("Abluft", Service::Type::TemperatureSensor);
+      extract_air_temperature->addCharacteristic(Characteristic::Type::CurrentTemperature);
+
+      ventilation->setPrimaryServiceKey("Luefter");
+
+      mapper_.mapEntities("helios.fan_stage", "homebridge.Lueftung.Luefter.RotationSpeed", true);
+      mapper_.mapEntities("helios.on", "homebridge.Lueftung.Luefter.On", true);
+      mapper_.mapEntities("helios.temperature_supply_air", "homebridge.Lueftung.Zuluft.CurrentTemperature", true);
+      mapper_.mapEntities("helios.temperature_extract_air", "homebridge.Lueftung.Abluft.CurrentTemperature", true);*/
+
+      std::cout << "Finished loading file '" << config_file_path << "'" << std::endl;
+    }
+    else
+    {
+      throw std::runtime_error("Config file does not exist: '" + config_file_path + "'");
+    }
+  }
+
+  void Backend::loadAccessory(const libconfig::Setting& accessory_description)
+  {
+    using namespace libconfig;
+
+    std::string name;
+    size_t loaded_services_count = 0;
+    std::string primary_service = "";
+    bool primary_service_set = accessory_description.lookupValue("primary_service", primary_service);
+
+    if(accessory_description.lookupValue("name", name))
+    {
+      std::cout << "Loading accessory '" << name << "'" << std::endl;
+
+      std::shared_ptr<Accessory> accessory_object = accessories_manager_.addAccessory(name);
+
+      try
+      {
+	const Setting& services = accessory_description["services"];
+	size_t services_count = services.getLength();
+
+	for(unsigned int service_index = 0; service_index < services_count; ++service_index)
+	{
+	  const Setting& service = services[service_index];
+
+	  std::string service_name;
+	  std::string service_type;
+	  
+	  if(service.lookupValue("name", service_name) &&
+	     service.lookupValue("type", service_type))
+	  {
+	    Service::Type service_type_symbol = Service::parseTypeString(service_type);
+
+	    if(service_type_symbol != Service::Type::Undefined)
+	    {
+	      std::cout << "Adding service '" << service_name << "' of type '" << service_type << "'." << std::endl;
+	      std::shared_ptr<Service> service_object = accessory_object->addService(service_name, service_type_symbol);
+
+	      try
+	      {
+		const Setting& characteristics = service["characteristics"];
+		size_t characteristics_count = characteristics.getLength();
+
+		for(unsigned int characteristic_index = 0; characteristic_index < characteristics_count; ++characteristic_index)
+		{
+		  const Setting& characteristic = characteristics[characteristic_index];
+		  Characteristic::Type characteristic_type = Characteristic::parseTypeString(characteristic.getName());
+
+		  if(characteristic_type != Characteristic::Type::Undefined)
+		  {
+		    std::cout << "Adding characteristic of type '" << characteristic.getName() << "'" << std::endl;
+
+		    std::shared_ptr<Characteristic> characteristic_object = service_object->addCharacteristic(characteristic_type);
+
+		    size_t parameters_count = characteristic.getLength();
+
+		    for(unsigned int parameter_index = 0; parameter_index < parameters_count; ++parameter_index)
+		    {
+		      const Setting& parameter = characteristic[parameter_index];
+		      std::string parameter_name = parameter.getName();
+
+		      bool type_ok = true;
+
+		      switch(parameter.getType())
+		      {
+		      case Setting::TypeInt:
+		      case Setting::TypeInt64:
+			characteristic_object->setProperty(parameter_name, static_cast<int>(parameter));
+			break;
+
+		      case Setting::TypeFloat:
+			characteristic_object->setProperty(parameter_name, static_cast<double>(parameter));
+			break;
+
+		      case Setting::TypeString:
+			characteristic_object->setProperty(parameter_name, static_cast<const char*>(parameter));
+			break;
+
+		      case Setting::TypeBoolean:
+			characteristic_object->setProperty(parameter_name, static_cast<bool>(parameter));
+			break;
+
+		      default:
+			std::cerr << "Value of parameter '" << parameter_name << "' has unknown type." << std::endl;
+			type_ok = false;
+			break;
+		      }
+
+		      if(type_ok)
+		      {
+			std::cout << "Setting parameter '" << parameter_name << "' = " << characteristic_object->getProperty(parameter_name) << std::endl;
+		      }
+		    }
+		  }
+		  else
+		  {
+		    std::cerr << "Unknown characteristic type '" << characteristic.getName() << "'" << std::endl;
+		  }
+		}
+	      }
+	      catch(const SettingNotFoundException& ex)
+	      {
+		// Ignore.
+	      }
+	    }
+	    else
+	    {
+	      std::cerr << "Service '" << service_name << "' has unknown type '" << service_type << "'." << std::endl;
+	    }
+
+	    loaded_services_count++;
+	  }
+	}
+      }
+      catch(const SettingNotFoundException& ex)
+      {
+	std::cerr << "Faulty accessory description." << std::endl;
+      }
+    }
+    else
+    {
+      std::cerr << "Accessory definition lacks name property." << std::endl;
+    }
   }
 }
