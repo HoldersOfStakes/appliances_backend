@@ -27,7 +27,7 @@ checking out, building, running yourself if you want to try it.
 
 On a Ubuntu server of your choice, install the prerequisite packages:
 ```bash
-sudo apt-get install cmake g++ libmosquitto-dev libmodbus-dev nlohmann-json-dev
+sudo apt-get install cmake g++ libmosquitto-dev libmodbus-dev nlohmann-json-dev libconfig++-dev
 ```
 
 Get the source:
