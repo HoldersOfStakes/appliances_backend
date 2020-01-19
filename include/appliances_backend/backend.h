@@ -47,9 +47,10 @@ namespace appliances_backend
     Log log_;
 
     void loadConfiguration(std::string config_file_path);
-    void loadAppliance(const libconfig::Setting& appliance_description);
-    void loadInterface(const libconfig::Setting& interface_description);
-    void loadAccessory(const libconfig::Setting& accessory_description);
+    void loadAppliance(const libconfig::Setting& appliance_description, Log log);
+    void loadInterface(const libconfig::Setting& interface_description, Log log);
+    void loadAccessory(const libconfig::Setting& accessory_description, Log log);
+    void loadMapping(const libconfig::Setting& mapping_description, Log log);
   };
 }
 

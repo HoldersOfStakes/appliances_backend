@@ -5,6 +5,7 @@ namespace appliances_backend
 {
   Backend::Backend(std::string config_file_path)
     : config_file_path_{ config_file_path }
+    , log_{ "Backend" }
   {
   }
 
@@ -42,7 +43,7 @@ namespace appliances_backend
 
       for(const std::pair<std::string, nlohmann::json>& changed_variable_pair : changed_variables)
       {
-	std::cout << "From appliance: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
+        log_ << Log::Severity::Debug << "From appliance: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
 
 	for(const std::string& mapped_entity : mapper_.getMappedEntities(changed_variable_pair.first))
 	{
@@ -87,7 +88,7 @@ namespace appliances_backend
 
       for(const std::pair<std::string, nlohmann::json>& changed_variable_pair : changed_variables)
       {
-	std::cout << "From interface: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
+        log_ << Log::Severity::Debug << "From interface: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
 
 	bool was_handled = false;
 	{
@@ -186,7 +187,8 @@ namespace appliances_backend
   {
     if(fileExists(config_file_path))
     {
-      std::cout << "Loading file '" << config_file_path << "'" << std::endl;
+      log_ << Log::Severity::Info << "Loading file '" << config_file_path << "'" << std::endl;
+      Log file_loading_log = log_.deriveLogLevel();
 
       using namespace libconfig;
 
@@ -195,9 +197,9 @@ namespace appliances_backend
 
       const Setting& root = cfg.getRoot();
 
-      std::cout << "Loading appliances" << std::endl;
-
       // Load appliances.
+      file_loading_log << Log::Severity::Info << "Loading appliances" << std::endl;
+
       try
       {
 	const Setting& appliances = root["appliances"];
@@ -206,7 +208,7 @@ namespace appliances_backend
 	for(unsigned int appliance_index = 0; appliance_index < appliances_count; ++appliance_index)
 	{
 	  const Setting& appliance = appliances[appliance_index];
-	  loadAppliance(appliance);
+	  loadAppliance(appliance, file_loading_log.deriveLogLevel());
 	}
       }
       catch(const SettingNotFoundException& ex)
@@ -214,11 +216,9 @@ namespace appliances_backend
 	// Ignore.
       }
 
-      std::cout << "Done loading appliances" << std::endl;
-
-      std::cout << "Loading interfaces" << std::endl;
-
       // Load interfaces.
+      file_loading_log << Log::Severity::Info << "Loading interfaces" << std::endl;
+
       try
       {
 	const Setting& interfaces = root["interfaces"];
@@ -227,7 +227,7 @@ namespace appliances_backend
 	for(unsigned int interface_index = 0; interface_index < interfaces_count; ++interface_index)
 	{
 	  const Setting& interface = interfaces[interface_index];
-	  loadInterface(interface);
+	  loadInterface(interface, file_loading_log.deriveLogLevel());
 	}
       }
       catch(const SettingNotFoundException& ex)
@@ -235,11 +235,9 @@ namespace appliances_backend
 	// Ignore.
       }
 
-      std::cout << "Done loading interfaces" << std::endl;
-
-      std::cout << "Loading accessories" << std::endl;
-
       // Load accessories.
+      file_loading_log << Log::Severity::Info << "Loading accessories" << std::endl;
+
       try
       {
 	const Setting& accessories = root["accessories"];
@@ -248,7 +246,7 @@ namespace appliances_backend
 	for(unsigned int accessory_index = 0; accessory_index < accessories_count; ++accessory_index)
 	{
 	  const Setting& accessory = accessories[accessory_index];
-	  loadAccessory(accessory);
+	  loadAccessory(accessory, file_loading_log.deriveLogLevel());
 	}
       }
       catch(const SettingNotFoundException& ex)
@@ -256,7 +254,24 @@ namespace appliances_backend
 	// Ignore.
       }
 
-      std::cout << "Done loading accessories" << std::endl;
+      // Load mappings.
+      file_loading_log << Log::Severity::Info << "Loading mappings" << std::endl;
+
+      try
+      {
+	const Setting& mappings = root["mappings"];
+	size_t mappings_count = mappings.getLength();
+
+	for(unsigned int mapping_index = 0; mapping_index < mappings_count; ++mapping_index)
+	{
+	  const Setting& mapping = mappings[mapping_index];
+	  loadMapping(mapping, file_loading_log.deriveLogLevel());
+	}
+      }
+      catch(const SettingNotFoundException& ex)
+      {
+	// Ignore.
+      }
 
       /*interfaces_manager_.addInterface<interfaces::HomebridgeMqtt>("homebridge", "192.168.100.2", 1883);
       appliances_manager_.addAppliance<appliances::HeliosKwl>("helios", "192.168.100.14");
@@ -280,7 +295,7 @@ namespace appliances_backend
       mapper_.mapEntities("helios.temperature_supply_air", "homebridge.Lueftung.Zuluft.CurrentTemperature", true);
       mapper_.mapEntities("helios.temperature_extract_air", "homebridge.Lueftung.Abluft.CurrentTemperature", true);*/
 
-      std::cout << "Finished loading file '" << config_file_path << "'" << std::endl;
+      log_ << Log::Severity::Info << "Finished loading file '" << config_file_path << "'" << std::endl;
     }
     else
     {
@@ -288,30 +303,29 @@ namespace appliances_backend
     }
   }
 
-  void Backend::loadAppliance(const libconfig::Setting& appliance_description)
+  void Backend::loadAppliance(const libconfig::Setting& appliance_description, Log log)
   {
     using namespace libconfig;
 
     std::string appliance_key = appliance_description.getName();
 
-    std::cout << "Instantiating appliance '" << appliance_key << "'" << std::endl;
+    log << Log::Severity::Info << "Instantiating appliance '" << appliance_key << "'" << std::endl;
 
     // ...
   }
   
-  void Backend::loadInterface(const libconfig::Setting& interface_description)
+  void Backend::loadInterface(const libconfig::Setting& interface_description, Log log)
   {
     using namespace libconfig;
 
     std::string interface_key = interface_description.getName();
 
-    std::cout << "Instantiating interface '" << interface_key << "'" << std::endl;
+    log << Log::Severity::Info << "Instantiating interface '" << interface_key << "'" << std::endl;
 
-    log_ << "Test" << "huh" << " " << 5.6 << std::endl;
     // ...
   }
   
-  void Backend::loadAccessory(const libconfig::Setting& accessory_description)
+  void Backend::loadAccessory(const libconfig::Setting& accessory_description, Log log)
   {
     using namespace libconfig;
 
@@ -322,7 +336,7 @@ namespace appliances_backend
 
     if(accessory_description.lookupValue("name", name))
     {
-      std::cout << "Loading accessory '" << name << "'" << std::endl;
+      log << Log::Severity::Info << "Loading accessory '" << name << "'" << std::endl;
 
       std::shared_ptr<Accessory> accessory_object = accessories_manager_.addAccessory(name);
 
@@ -330,6 +344,8 @@ namespace appliances_backend
       {
 	const Setting& services = accessory_description["services"];
 	size_t services_count = services.getLength();
+
+	Log service_loading_log = log.deriveLogLevel();
 
 	for(unsigned int service_index = 0; service_index < services_count; ++service_index)
 	{
@@ -345,13 +361,15 @@ namespace appliances_backend
 
 	    if(service_type_symbol != Service::Type::Undefined)
 	    {
-	      std::cout << "Adding service '" << service_name << "' of type '" << service_type << "'." << std::endl;
+	      service_loading_log << Log::Severity::Info << "Adding service '" << service_name << "' of type '" << service_type << "'." << std::endl;
 	      std::shared_ptr<Service> service_object = accessory_object->addService(service_name, service_type_symbol);
 
 	      try
 	      {
 		const Setting& characteristics = service["characteristics"];
 		size_t characteristics_count = characteristics.getLength();
+
+		Log characteristic_loading_log = service_loading_log.deriveLogLevel();
 
 		for(unsigned int characteristic_index = 0; characteristic_index < characteristics_count; ++characteristic_index)
 		{
@@ -360,11 +378,12 @@ namespace appliances_backend
 
 		  if(characteristic_type != Characteristic::Type::Undefined)
 		  {
-		    std::cout << "Adding characteristic of type '" << characteristic.getName() << "'" << std::endl;
+		    characteristic_loading_log << Log::Severity::Info << "Adding characteristic of type '" << characteristic.getName() << "'" << std::endl;
 
 		    std::shared_ptr<Characteristic> characteristic_object = service_object->addCharacteristic(characteristic_type);
 
 		    size_t parameters_count = characteristic.getLength();
+		    Log parameter_loading_log = characteristic_loading_log.deriveLogLevel();
 
 		    for(unsigned int parameter_index = 0; parameter_index < parameters_count; ++parameter_index)
 		    {
@@ -393,20 +412,20 @@ namespace appliances_backend
 			break;
 
 		      default:
-			std::cerr << "Value of parameter '" << parameter_name << "' has unknown type." << std::endl;
+		        parameter_loading_log << Log::Severity::Error << "Value of parameter '" << parameter_name << "' has unknown type." << std::endl;
 			type_ok = false;
 			break;
 		      }
 
 		      if(type_ok)
 		      {
-			std::cout << "Setting parameter '" << parameter_name << "' = " << characteristic_object->getProperty(parameter_name) << std::endl;
+		        parameter_loading_log << Log::Severity::Info << "Setting parameter '" << parameter_name << "' = " << characteristic_object->getProperty(parameter_name) << std::endl;
 		      }
 		    }
 		  }
 		  else
 		  {
-		    std::cerr << "Unknown characteristic type '" << characteristic.getName() << "'" << std::endl;
+		    log << Log::Severity::Error << "Unknown characteristic type '" << characteristic.getName() << "'" << std::endl;
 		  }
 		}
 	      }
@@ -417,7 +436,7 @@ namespace appliances_backend
 	    }
 	    else
 	    {
-	      std::cerr << "Service '" << service_name << "' has unknown type '" << service_type << "'." << std::endl;
+	      log << Log::Severity::Error << "Service '" << service_name << "' has unknown type '" << service_type << "'." << std::endl;
 	    }
 
 	    loaded_services_count++;
@@ -426,12 +445,38 @@ namespace appliances_backend
       }
       catch(const SettingNotFoundException& ex)
       {
-	std::cerr << "Faulty accessory description." << std::endl;
+        log << Log::Severity::Error << "Faulty accessory description." << std::endl;
       }
     }
     else
     {
-      std::cerr << "Accessory definition lacks name property." << std::endl;
+      log << Log::Severity::Error << "Accessory definition lacks name property." << std::endl;
+    }
+  }
+
+  void Backend::loadMapping(const libconfig::Setting& mapping_description, Log log)
+  {
+    using namespace libconfig;
+
+    try
+    {
+      const Setting& from = mapping_description["from"];
+      const Setting& to = mapping_description["to"];
+
+      log << Log::Severity::Info << "Mapping variables bidirectionally:" << std::endl;
+      Log variable_log = log.deriveLogLevel();
+
+      std::string from_string = static_cast<const char*>(from);
+      std::string to_string = static_cast<const char*>(to);
+
+      variable_log << Log::Severity::Info << from_string << std::endl;
+      variable_log << Log::Severity::Info << to_string << std::endl;
+
+      mapper_.mapEntities(from_string, to_string, true);
+    }
+    catch(const SettingNotFoundException& ex)
+    {
+      log << Log::Severity::Warning << "Invalid mapping format" << std::endl;
     }
   }
 }
