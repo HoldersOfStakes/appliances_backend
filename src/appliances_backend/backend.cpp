@@ -308,10 +308,37 @@ namespace appliances_backend
     using namespace libconfig;
 
     std::string appliance_key = appliance_description.getName();
+    std::string appliance_type = "";
 
-    log << Log::Severity::Info << "Instantiating appliance '" << appliance_key << "'" << std::endl;
+    try
+    {
+      const Setting& type = appliance_description["type"];
+      appliance_type = static_cast<const char*>(type);
+    }
+    catch(const SettingNotFoundException& ex)
+    {
+      // Ignore.
+    }
 
-    // ...
+    if(appliance_type == "")
+    {
+      log << Log::Severity::Error << "Appliance '" << appliance_key << "' has no type set." << std::endl;
+      throw std::runtime_error("Appliance '" + appliance_key + "' has no type set.");
+    }
+
+    log << Log::Severity::Info << "Instantiating appliance '" << appliance_key << "' (type '" << appliance_type << "')" << std::endl;
+
+    if(appliance_type == "helios_kwl")
+    {
+      // TODO(fairlight1337): Error check the Json path used in here.
+
+      appliances_manager_.addAppliance<appliances::HeliosKwl>(appliance_key, static_cast<const char*>(appliance_description["parameters"]["host"]));
+    }
+    else
+    {
+      log << Log::Severity::Error << "Appliance '" << appliance_key << "' has unknown type '" << appliance_type << "'." << std::endl;
+      throw std::runtime_error("Appliance '" + appliance_key + "' has unknown type '" + appliance_type + "'.");
+    }
   }
   
   void Backend::loadInterface(const libconfig::Setting& interface_description, Log log)
@@ -319,10 +346,38 @@ namespace appliances_backend
     using namespace libconfig;
 
     std::string interface_key = interface_description.getName();
+    std::string interface_type = "";
 
-    log << Log::Severity::Info << "Instantiating interface '" << interface_key << "'" << std::endl;
+    try
+    {
+      const Setting& type = interface_description["type"];
+      interface_type = static_cast<const char*>(type);
+    }
+    catch(const SettingNotFoundException& ex)
+    {
+      // Ignore.
+    }
 
-    // ...
+    if(interface_type == "")
+    {
+      log << Log::Severity::Error << "Interface '" << interface_key << "' has no type set." << std::endl;
+      throw std::runtime_error("Interface '" + interface_key + "' has no type set.");
+    }
+
+
+    log << Log::Severity::Info << "Instantiating interface '" << interface_key << "' (type '" << interface_type << "')" << std::endl;
+
+    if(interface_type == "homebridge_mqtt")
+    {
+      // TODO(fairlight1337): Error check the Json path used in here.
+
+      interfaces_manager_.addInterface<interfaces::HomebridgeMqtt>(interface_key, static_cast<const char*>(interface_description["parameters"]["host"]), static_cast<unsigned int>(interface_description["parameters"]["port"]));
+    }
+    else
+    {
+      log << Log::Severity::Error << "Interface '" << interface_key << "' has unknown type '" << interface_type << "'." << std::endl;
+      throw std::runtime_error("Interface '" + interface_key + "' has unknown type '" + interface_type + "'.");
+    }
   }
   
   void Backend::loadAccessory(const libconfig::Setting& accessory_description, Log log)
@@ -339,6 +394,9 @@ namespace appliances_backend
       log << Log::Severity::Info << "Loading accessory '" << name << "'" << std::endl;
 
       std::shared_ptr<Accessory> accessory_object = accessories_manager_.addAccessory(name);
+
+      // TODO(fairlight1337): Check for primary service validity here.
+      accessory_object->setPrimaryServiceKey(static_cast<const char*>(accessory_description["primary_service"]));
 
       try
       {
