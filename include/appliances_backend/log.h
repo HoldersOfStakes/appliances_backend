@@ -48,6 +48,8 @@ namespace appliances_backend
     Log& operator<<(const Severity& severity)
     {
       current_severity_ = severity;
+
+      return *this;
     }
 
     Log deriveLogLevel();
