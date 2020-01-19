@@ -195,6 +195,51 @@ namespace appliances_backend
 
       const Setting& root = cfg.getRoot();
 
+      std::cout << "Loading appliances" << std::endl;
+
+      // Load appliances.
+      try
+      {
+	const Setting& appliances = root["appliances"];
+	size_t appliances_count = appliances.getLength();
+
+	for(unsigned int appliance_index = 0; appliance_index < appliances_count; ++appliance_index)
+	{
+	  const Setting& appliance = appliances[appliance_index];
+	  loadAppliance(appliance);
+	}
+      }
+      catch(const SettingNotFoundException& ex)
+      {
+	// Ignore.
+      }
+
+      std::cout << "Done loading appliances" << std::endl;
+
+      std::cout << "Loading interfaces" << std::endl;
+
+      // Load interfaces.
+      try
+      {
+	const Setting& interfaces = root["interfaces"];
+	size_t interfaces_count = interfaces.getLength();
+
+	for(unsigned int interface_index = 0; interface_index < interfaces_count; ++interface_index)
+	{
+	  const Setting& interface = interfaces[interface_index];
+	  loadInterface(interface);
+	}
+      }
+      catch(const SettingNotFoundException& ex)
+      {
+	// Ignore.
+      }
+
+      std::cout << "Done loading interfaces" << std::endl;
+
+      std::cout << "Loading accessories" << std::endl;
+
+      // Load accessories.
       try
       {
 	const Setting& accessories = root["accessories"];
@@ -210,6 +255,8 @@ namespace appliances_backend
       {
 	// Ignore.
       }
+
+      std::cout << "Done loading accessories" << std::endl;
 
       /*interfaces_manager_.addInterface<interfaces::HomebridgeMqtt>("homebridge", "192.168.100.2", 1883);
       appliances_manager_.addAppliance<appliances::HeliosKwl>("helios", "192.168.100.14");
@@ -241,6 +288,29 @@ namespace appliances_backend
     }
   }
 
+  void Backend::loadAppliance(const libconfig::Setting& appliance_description)
+  {
+    using namespace libconfig;
+
+    std::string appliance_key = appliance_description.getName();
+
+    std::cout << "Instantiating appliance '" << appliance_key << "'" << std::endl;
+
+    // ...
+  }
+  
+  void Backend::loadInterface(const libconfig::Setting& interface_description)
+  {
+    using namespace libconfig;
+
+    std::string interface_key = interface_description.getName();
+
+    std::cout << "Instantiating interface '" << interface_key << "'" << std::endl;
+
+    log_ << "Test" << "huh" << " " << 5.6 << std::endl;
+    // ...
+  }
+  
   void Backend::loadAccessory(const libconfig::Setting& accessory_description)
   {
     using namespace libconfig;

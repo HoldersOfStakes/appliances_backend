@@ -17,6 +17,7 @@
 #include <appliances_backend/interfaces_manager.h>
 #include <appliances_backend/accessories_manager.h>
 #include <appliances_backend/mapper.h>
+#include <appliances_backend/log.h>
 
 
 namespace appliances_backend
@@ -43,8 +44,11 @@ namespace appliances_backend
     AppliancesManager appliances_manager_;
     AccessoriesManager accessories_manager_;
     Mapper mapper_;
+    Log log_;
 
     void loadConfiguration(std::string config_file_path);
+    void loadAppliance(const libconfig::Setting& appliance_description);
+    void loadInterface(const libconfig::Setting& interface_description);
     void loadAccessory(const libconfig::Setting& accessory_description);
   };
 }
