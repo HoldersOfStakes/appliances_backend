@@ -27,17 +27,27 @@ namespace appliances_backend
 
   void HeliosKwlModbusClient::writeFanStage(unsigned int fan_stage)
   {
-    while(true)
+    int retry_count = 5;
+
+    while(retry_count > 0)
     {
       try
       {
 	writeVariable("v00102", fan_stage, 5);
 	break;
       }
-      catch(...)
+      catch(const std::runtime_error& err)
       {
+	std::cerr << "Error: " << err.what() << std::endl;
 	usleep(100000);
+
+	retry_count--;
       }
+    }
+
+    if(retry_count == 0)
+    {
+      std::cerr << "Giving up" << std::endl;
     }
   }
 
