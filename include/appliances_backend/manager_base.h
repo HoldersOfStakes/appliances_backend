@@ -13,15 +13,16 @@
 
 // Private
 #include <appliances_backend/manageable_base.h>
+#include <appliances_backend/logging_base.h>
 
 
 namespace appliances_backend
 {
-  class ManagerBase
+  class ManagerBase : public LoggingBase
   {
   public:
-    ManagerBase() = default;
-    virtual ~ManagerBase();
+    ManagerBase(Log log);
+    ~ManagerBase() override;
 
     void start();
     void stop();

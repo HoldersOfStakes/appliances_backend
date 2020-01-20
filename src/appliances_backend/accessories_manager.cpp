@@ -3,6 +3,11 @@
 
 namespace appliances_backend
 {
+  AccessoriesManager::AccessoriesManager(Log log)
+    : LoggingBase{ log }
+  {
+  }
+
   std::vector<std::string> AccessoriesManager::getAccessoryNames()
   {
     std::vector<std::string> accessory_names;
@@ -19,6 +24,7 @@ namespace appliances_backend
   {
     if(accessories_.find(name) == accessories_.end())
     {
+      log() << Log::Severity::Error << "Couldn't find accessory by the name '" << name << "'." << std::endl;
       throw std::runtime_error("Couldn't find accessory by the name '" + name + "'.");
     }
 

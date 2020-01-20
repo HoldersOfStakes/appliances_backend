@@ -144,7 +144,6 @@ namespace appliances_backend
     void MqttClient::handleLog(int log_level, std::string message)
     {
       // TODO(fairlight1337): Add logging facility and forward messages there.
-      //std::cout << "Log[" << log_level << "]: " << message << std::endl;
     }
 
     void MqttClient::handleConnect(int return_code)

@@ -3,6 +3,11 @@
 
 namespace appliances_backend
 {
+  InterfacesManager::InterfacesManager(Log log)
+    : ManagerBase{ log }
+  {
+  }
+
   void InterfacesManager::setVariable(std::string interface_key, std::shared_ptr<Accessory> accessory, std::shared_ptr<Service> service, std::shared_ptr<Characteristic> characteristic, nlohmann::json value)
   {
     if(!interface_key.empty() && accessory != nullptr && service != nullptr && characteristic != nullptr)
@@ -13,6 +18,7 @@ namespace appliances_backend
       
 	if(interface == nullptr)
 	{
+	  log() << Log::Severity::Error << "Managed entity with key '" << interface_key << "' not of expected type." << std::endl;
 	  throw std::runtime_error("Managed entity with key '" + interface_key + "' not of expected type.");
 	}
 
@@ -29,6 +35,7 @@ namespace appliances_backend
       
       if(interface == nullptr)
       {
+	log() << Log::Severity::Error << "Managed entity with key '" << managed_entity_pair.first << "' not of expected type." << std::endl;
 	throw std::runtime_error("Managed entity with key '" + managed_entity_pair.first + "' not of expected type.");
       }
 
@@ -44,6 +51,7 @@ namespace appliances_backend
       
       if(interface == nullptr)
       {
+	log() << Log::Severity::Error << "Managed entity with key '" << managed_entity_pair.first << "' not of expected type." << std::endl;
 	throw std::runtime_error("Managed entity with key '" + managed_entity_pair.first + "' not of expected type.");
       }
 
@@ -56,19 +64,20 @@ namespace appliances_backend
     std::lock_guard<std::mutex> lock(managed_entities_access_);
     std::map<std::string, nlohmann::json> changed_variables;
 
-    for(const std::pair<std::string, std::shared_ptr<ManageableBase>>& manageable_entity_pair : managed_entities_)
+    for(const std::pair<std::string, std::shared_ptr<ManageableBase>>& managed_entity_pair : managed_entities_)
     {
-      std::shared_ptr<InterfaceBase> interface = std::dynamic_pointer_cast<InterfaceBase>(manageable_entity_pair.second);
+      std::shared_ptr<InterfaceBase> interface = std::dynamic_pointer_cast<InterfaceBase>(managed_entity_pair.second);
 
       if(interface == nullptr)
       {
-	throw std::runtime_error("Managed entity with key '" + manageable_entity_pair.first + "' not of expected type.");
+	log() << Log::Severity::Error << "Managed entity with key '" << managed_entity_pair.first << "' not of expected type." << std::endl;
+	throw std::runtime_error("Managed entity with key '" + managed_entity_pair.first + "' not of expected type.");
       }
 
       while(interface->wasVariableChanged())
       {
 	std::pair<std::string, nlohmann::json> changed_variable = interface->getChangedVariable();
-	changed_variables[manageable_entity_pair.first + "." + changed_variable.first] = changed_variable.second;
+	changed_variables[managed_entity_pair.first + "." + changed_variable.first] = changed_variable.second;
       }
     }
 

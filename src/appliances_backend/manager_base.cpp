@@ -3,6 +3,11 @@
 
 namespace appliances_backend
 {
+  ManagerBase::ManagerBase(Log log)
+    : LoggingBase{ log }
+  {
+  }
+
   ManagerBase::~ManagerBase()
   {
     stop();
@@ -40,23 +45,25 @@ namespace appliances_backend
   {
     if(managed_entities_.find(key) == managed_entities_.end())
     {
+      log() << Log::Severity::Error << "Cannot find managed entity to start with key '" << key << "'." << std::endl;
       throw std::runtime_error("Cannot find managed entity to start with key '" + key + "'.");
     }
 
-    std::cout << "Starting '" << key << "'" << std::endl;
+    log() << Log::Severity::Info << "Starting '" << key << "'" << std::endl;
     managed_entities_[key]->start();
-    std::cout << "Started '" << key << "'" << std::endl;
+    log() << Log::Severity::Info << "Started '" << key << "'" << std::endl;
   }
 
   void ManagerBase::stopManagedEntity(std::string key)
   {
     if(managed_entities_.find(key) == managed_entities_.end())
     {
+      log() << Log::Severity::Error << "Cannot find managed entity to stop with key '" << key << "'." << std::endl;
       throw std::runtime_error("Cannot find managed entity to stop with key '" + key + "'.");
     }
 
-    std::cout << "Stopping '" << key << "'" << std::endl;
+    log() << Log::Severity::Info << "Stopping '" << key << "'" << std::endl;
     managed_entities_[key]->stop();
-    std::cout << "Stopped '" << key << "'" << std::endl;
+    log() << Log::Severity::Info << "Stopped '" << key << "'" << std::endl;
   }
 }

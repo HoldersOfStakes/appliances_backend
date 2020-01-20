@@ -29,7 +29,8 @@ add_library(${PROJECT_NAME}
   src/appliances_backend/mapper.cpp
   src/appliances_backend/accessories_manager.cpp
   src/appliances_backend/backend.cpp
-  src/appliances_backend/log.cpp)
+  src/appliances_backend/log.cpp
+  src/appliances_backend/logging_base.cpp)
 
 add_library(${PROJECT_NAME}_interface_homebridge_mqtt
   src/appliances_backend/interfaces/homebridge/homebridge_mqtt.cpp)

@@ -11,15 +11,15 @@
 
 // Private
 #include <appliances_backend/accessory.h>
+#include <appliances_backend/logging_base.h>
 
 
 namespace appliances_backend
 {
-  class AccessoriesManager
+  class AccessoriesManager : public LoggingBase
   {
   public:
-    AccessoriesManager() = default;
-    virtual ~AccessoriesManager() = default;
+    AccessoriesManager(Log log);
 
     template<class ... Args>
     std::shared_ptr<Accessory> addAccessory(std::string name, Args ... args)

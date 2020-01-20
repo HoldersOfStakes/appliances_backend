@@ -21,7 +21,7 @@ namespace appliances_backend
   class AppliancesManager : public ManagerBase
   {
   public:
-    AppliancesManager() = default;
+    AppliancesManager(Log log);
 
     template<class TApplianceType, class ... Args>
     void addAppliance(std::string key, Args ... args)

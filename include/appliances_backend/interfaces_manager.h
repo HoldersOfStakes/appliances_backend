@@ -27,7 +27,7 @@ namespace appliances_backend
   class InterfacesManager : public ManagerBase
   {
   public:
-    InterfacesManager() = default;
+    InterfacesManager(Log log);
 
     template<class TApplianceType, class ... Args>
     void addInterface(std::string key, Args ... args)

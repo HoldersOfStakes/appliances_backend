@@ -3,6 +3,11 @@
 
 namespace appliances_backend
 {
+  AppliancesManager::AppliancesManager(Log log)
+    : ManagerBase{ log }
+  {
+  }
+
   void AppliancesManager::setVariable(std::string appliance_key, std::list<std::string> variable_parts, nlohmann::json value)
   {
     if(managed_entities_.find(appliance_key) != managed_entities_.end())
@@ -11,6 +16,7 @@ namespace appliances_backend
       
       if(appliance == nullptr)
       {
+	log() << Log::Severity::Error << "Managed entity with key '" << appliance_key << "' not of expected type." << std::endl;
 	throw std::runtime_error("Managed entity with key '" + appliance_key + "' not of expected type.");
       }
 
@@ -29,6 +35,7 @@ namespace appliances_backend
 
       if(appliance == nullptr)
       {
+	log() << Log::Severity::Error << "Managed entity with key '" << manageable_entity_pair.first << "' not of expected type." << std::endl;
 	throw std::runtime_error("Managed entity with key '" + manageable_entity_pair.first + "' not of expected type.");
       }
 

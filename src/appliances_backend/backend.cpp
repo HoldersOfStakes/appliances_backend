@@ -4,8 +4,11 @@
 namespace appliances_backend
 {
   Backend::Backend(std::string config_file_path)
-    : config_file_path_{ config_file_path }
-    , log_{ "Backend" }
+    : LoggingBase{ Log("Backend") }
+    , config_file_path_{ config_file_path }
+    , appliances_manager_{ log() }
+    , interfaces_manager_{ log() }
+    , accessories_manager_{ log() }
   {
   }
 
@@ -43,7 +46,7 @@ namespace appliances_backend
 
       for(const std::pair<std::string, nlohmann::json>& changed_variable_pair : changed_variables)
       {
-        log_ << Log::Severity::Debug << "From appliance: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
+        log() << Log::Severity::Debug << "From appliance: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
 
 	for(const std::string& mapped_entity : mapper_.getMappedEntities(changed_variable_pair.first))
 	{
@@ -88,7 +91,7 @@ namespace appliances_backend
 
       for(const std::pair<std::string, nlohmann::json>& changed_variable_pair : changed_variables)
       {
-        log_ << Log::Severity::Debug << "From interface: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
+        log() << Log::Severity::Debug << "From interface: " << changed_variable_pair.first << " = " << changed_variable_pair.second << std::endl;
 
 	bool was_handled = false;
 	{
@@ -187,8 +190,8 @@ namespace appliances_backend
   {
     if(fileExists(config_file_path))
     {
-      log_ << Log::Severity::Info << "Loading file '" << config_file_path << "'" << std::endl;
-      Log file_loading_log = log_.deriveLogLevel();
+      log() << Log::Severity::Info << "Loading file '" << config_file_path << "'" << std::endl;
+      Log file_loading_log = log().deriveLogLevel();
 
       using namespace libconfig;
 
@@ -295,7 +298,7 @@ namespace appliances_backend
       mapper_.mapEntities("helios.temperature_supply_air", "homebridge.Lueftung.Zuluft.CurrentTemperature", true);
       mapper_.mapEntities("helios.temperature_extract_air", "homebridge.Lueftung.Abluft.CurrentTemperature", true);*/
 
-      log_ << Log::Severity::Info << "Finished loading file '" << config_file_path << "'" << std::endl;
+      log() << Log::Severity::Info << "Finished loading file '" << config_file_path << "'" << std::endl;
     }
     else
     {
