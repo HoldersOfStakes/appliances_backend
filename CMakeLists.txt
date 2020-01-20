@@ -16,13 +16,10 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/appliances_backend/utilities/modbus_client.cpp
   src/appliances_backend/utilities/mqtt_client.cpp
-  src/appliances_backend/appliances/helios_kwl/helios_kwl_modbus_client.cpp
   src/appliances_backend/manageable_base.cpp
   src/appliances_backend/variable_managing_base.cpp
   src/appliances_backend/appliance_base.cpp
   src/appliances_backend/interface_base.cpp
-  src/appliances_backend/appliances/helios_kwl/helios_kwl.cpp
-  src/appliances_backend/interfaces/homebridge/homebridge_mqtt.cpp
   src/appliances_backend/appliances_manager.cpp
   src/appliances_backend/interfaces_manager.cpp
   src/appliances_backend/manager_base.cpp
@@ -34,17 +31,32 @@ add_library(${PROJECT_NAME}
   src/appliances_backend/backend.cpp
   src/appliances_backend/log.cpp)
 
+add_library(${PROJECT_NAME}_interface_homebridge_mqtt
+  src/appliances_backend/interfaces/homebridge/homebridge_mqtt.cpp)
+
+add_library(${PROJECT_NAME}_appliance_helios_kwl
+  src/appliances_backend/appliances/helios_kwl/helios_kwl.cpp
+  src/appliances_backend/appliances/helios_kwl/helios_kwl_modbus_client.cpp)
+
 set(EXECUTABLE_SOURCES
   src/main.cpp)
-
-add_executable(${PROJECT_NAME}-bin
-  ${EXECUTABLE_SOURCES})
-
-target_link_libraries(${PROJECT_NAME}-bin
-  ${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME}
   modbus
   mosquitto
   pthread
   config++)
+
+target_link_libraries(${PROJECT_NAME}_interface_homebridge_mqtt
+  ${PROJECT_NAME})
+
+target_link_libraries(${PROJECT_NAME}_appliance_helios_kwl
+  ${PROJECT_NAME})
+
+add_executable(${PROJECT_NAME}-bin
+  ${EXECUTABLE_SOURCES})
+
+target_link_libraries(${PROJECT_NAME}-bin
+  ${PROJECT_NAME}
+  ${PROJECT_NAME}_interface_homebridge_mqtt
+  ${PROJECT_NAME}_appliance_helios_kwl)
