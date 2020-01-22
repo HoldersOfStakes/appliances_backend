@@ -14,6 +14,7 @@ namespace appliances_backend
 
   void Backend::initialize()
   {
+    loadPlugins();
     loadConfiguration(config_file_path_);
 
     interfaces_manager_.start();
@@ -186,6 +187,28 @@ namespace appliances_backend
     return access(file_path.c_str(), F_OK) != -1;
   }
 
+  void Backend::loadPlugins()
+  {
+    interfaces_manager_.registerType("homebridge_mqtt",
+				     [](nlohmann::json parameters)
+				     {
+				       return std::make_shared<interfaces::HomebridgeMqtt>
+					 (
+					  parameters["host"].get<std::string>(),
+					  parameters["port"].get<unsigned short>()
+					 );
+				     });
+
+    appliances_manager_.registerType("helios_kwl",
+				     [](nlohmann::json parameters)
+				     {
+				       return std::make_shared<appliances::HeliosKwl>
+					 (
+					  parameters["host"].get<std::string>()
+					 );
+				     });
+  }
+
   void Backend::loadConfiguration(std::string config_file_path)
   {
     if(fileExists(config_file_path))
@@ -276,28 +299,6 @@ namespace appliances_backend
 	// Ignore.
       }
 
-      /*interfaces_manager_.addInterface<interfaces::HomebridgeMqtt>("homebridge", "192.168.100.2", 1883);
-      appliances_manager_.addAppliance<appliances::HeliosKwl>("helios", "192.168.100.14");
-
-      std::shared_ptr<Accessory> ventilation = accessories_manager_.addAccessory("Lueftung");
-      std::shared_ptr<Service> fan = ventilation->addService("Luefter", Service::Type::Fan);
-      std::shared_ptr<Characteristic> rotation_speed = fan->addCharacteristic(Characteristic::Type::RotationSpeed);
-      rotation_speed->setProperty("min_value", 1);
-      rotation_speed->setProperty("max_value", 4);
-      std::shared_ptr<Characteristic> on = fan->addCharacteristic(Characteristic::Type::On);
-      on->setProperty("always_on", true);
-      std::shared_ptr<Service> supply_air_temperature = ventilation->addService("Zuluft", Service::Type::TemperatureSensor);
-      supply_air_temperature->addCharacteristic(Characteristic::Type::CurrentTemperature);
-      std::shared_ptr<Service> extract_air_temperature = ventilation->addService("Abluft", Service::Type::TemperatureSensor);
-      extract_air_temperature->addCharacteristic(Characteristic::Type::CurrentTemperature);
-
-      ventilation->setPrimaryServiceKey("Luefter");
-
-      mapper_.mapEntities("helios.fan_stage", "homebridge.Lueftung.Luefter.RotationSpeed", true);
-      mapper_.mapEntities("helios.on", "homebridge.Lueftung.Luefter.On", true);
-      mapper_.mapEntities("helios.temperature_supply_air", "homebridge.Lueftung.Zuluft.CurrentTemperature", true);
-      mapper_.mapEntities("helios.temperature_extract_air", "homebridge.Lueftung.Abluft.CurrentTemperature", true);*/
-
       log() << Log::Severity::Info << "Finished loading file '" << config_file_path << "'" << std::endl;
     }
     else
@@ -330,17 +331,22 @@ namespace appliances_backend
     }
 
     log << Log::Severity::Info << "Instantiating appliance '" << appliance_key << "' (type '" << appliance_type << "')" << std::endl;
-
-    if(appliance_type == "helios_kwl")
+    
+    try
     {
-      // TODO(fairlight1337): Error check the Json path used in here.
-
-      appliances_manager_.addAppliance<appliances::HeliosKwl>(appliance_key, static_cast<const char*>(appliance_description["parameters"]["host"]));
+      appliances_manager_.addAppliance(appliance_type, appliance_key, convertConfigToJson(appliance_description["parameters"]));
     }
-    else
+    catch(const std::runtime_error& ex)
     {
-      log << Log::Severity::Error << "Appliance '" << appliance_key << "' has unknown type '" << appliance_type << "'." << std::endl;
-      throw std::runtime_error("Appliance '" + appliance_key + "' has unknown type '" + appliance_type + "'.");
+      log << Log::Severity::Critical << "Failed to instantiate appliance:" << std::endl;
+
+      Log fail_log = log.deriveLogLevel();
+      fail_log << Log::Severity::Critical << "Key        : " << appliance_key << std::endl;
+      fail_log << Log::Severity::Critical << "Type       : " << appliance_type << std::endl;
+      fail_log << Log::Severity::Critical << "Parameters : " << convertConfigToJson(appliance_description["parameters"]).dump() << std::endl;
+      fail_log << Log::Severity::Critical << "Error      : " << ex.what() << std::endl;
+
+      throw;
     }
   }
   
@@ -367,19 +373,23 @@ namespace appliances_backend
       throw std::runtime_error("Interface '" + interface_key + "' has no type set.");
     }
 
-
     log << Log::Severity::Info << "Instantiating interface '" << interface_key << "' (type '" << interface_type << "')" << std::endl;
 
-    if(interface_type == "homebridge_mqtt")
+    try
     {
-      // TODO(fairlight1337): Error check the Json path used in here.
-
-      interfaces_manager_.addInterface<interfaces::HomebridgeMqtt>(interface_key, static_cast<const char*>(interface_description["parameters"]["host"]), static_cast<unsigned int>(interface_description["parameters"]["port"]));
+      interfaces_manager_.addInterface(interface_type, interface_key, convertConfigToJson(interface_description["parameters"]));
     }
-    else
+    catch(const std::runtime_error& ex)
     {
-      log << Log::Severity::Error << "Interface '" << interface_key << "' has unknown type '" << interface_type << "'." << std::endl;
-      throw std::runtime_error("Interface '" + interface_key + "' has unknown type '" + interface_type + "'.");
+      log << Log::Severity::Critical << "Failed to instantiate interface:" << std::endl;
+
+      Log fail_log = log.deriveLogLevel();
+      fail_log << Log::Severity::Critical << "Key        : " << interface_key << std::endl;
+      fail_log << Log::Severity::Critical << "Type       : " << interface_type << std::endl;
+      fail_log << Log::Severity::Critical << "Parameters : " << convertConfigToJson(interface_description["parameters"]).dump() << std::endl;
+      fail_log << Log::Severity::Critical << "Error      : " << ex.what() << std::endl;
+
+      throw;
     }
   }
   
@@ -539,5 +549,62 @@ namespace appliances_backend
     {
       log << Log::Severity::Warning << "Invalid mapping format" << std::endl;
     }
+  }
+
+  nlohmann::json Backend::convertConfigToJson(const libconfig::Setting& setting)
+  {
+    nlohmann::json json;
+
+    switch(setting.getType())
+    {
+    case libconfig::Setting::TypeInt:
+      json = static_cast<int>(setting);
+      break;
+
+    case libconfig::Setting::TypeInt64:
+      json = static_cast<long>(setting);
+      break;
+
+    case libconfig::Setting::TypeFloat:
+      json = static_cast<double>(setting);
+      break;
+
+    case libconfig::Setting::TypeString:
+      json = std::string(static_cast<const char*>(setting));
+      break;
+
+    case libconfig::Setting::TypeBoolean:
+      json = static_cast<bool>(setting);
+      break;
+
+    case libconfig::Setting::TypeGroup:
+      {
+	size_t count = setting.getLength();
+
+	for(unsigned int i = 0; i < count; ++i)
+	{
+	  libconfig::Setting& sub_setting = setting[i];
+	  json[sub_setting.getName()] = convertConfigToJson(setting[i]);
+	}
+      }
+      break;
+
+    case libconfig::Setting::TypeArray:
+    case libconfig::Setting::TypeList:
+      {
+	size_t count = setting.getLength();
+
+	for(unsigned int i = 0; i < count; ++i)
+	{
+	  json.push_back(convertConfigToJson(setting[i]));
+	}
+      }
+      break;
+
+    case libconfig::Setting::TypeNone:
+      break;
+    }
+
+    return json;
   }
 }

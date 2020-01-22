@@ -24,15 +24,14 @@
 
 namespace appliances_backend
 {
-  class InterfacesManager : public ManagerBase
+  class InterfacesManager : public ManagerBase<InterfaceBase>
   {
   public:
     InterfacesManager(Log log);
 
-    template<class TApplianceType, class ... Args>
-    void addInterface(std::string key, Args ... args)
+    void addInterface(std::string type_key, std::string entity_key, nlohmann::json parameters)
     {
-      addManageableEntity<TApplianceType>(key, std::forward<Args>(args)...);
+      instantiateRegisteredType(type_key, entity_key, parameters);
     }
 
     void setVariable(std::string interface_key, std::shared_ptr<Accessory> accessory, std::shared_ptr<Service> service, std::shared_ptr<Characteristic> characteristic, nlohmann::json value);

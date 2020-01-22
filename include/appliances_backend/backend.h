@@ -37,6 +37,7 @@ namespace appliances_backend
   private:
     static std::list<std::string> split(const std::string& str, char delimeter);
     static bool fileExists(std::string file_path);
+    static nlohmann::json convertConfigToJson(const libconfig::Setting& setting);
 
     std::atomic<bool> should_run_;
     std::string config_file_path_;
@@ -45,6 +46,7 @@ namespace appliances_backend
     AccessoriesManager accessories_manager_;
     Mapper mapper_;
 
+    void loadPlugins();
     void loadConfiguration(std::string config_file_path);
     void loadAppliance(const libconfig::Setting& appliance_description, Log log);
     void loadInterface(const libconfig::Setting& interface_description, Log log);

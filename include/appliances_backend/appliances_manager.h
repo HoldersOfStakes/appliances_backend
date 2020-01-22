@@ -18,15 +18,14 @@
 
 namespace appliances_backend
 {
-  class AppliancesManager : public ManagerBase
+  class AppliancesManager : public ManagerBase<ApplianceBase>
   {
   public:
     AppliancesManager(Log log);
 
-    template<class TApplianceType, class ... Args>
-    void addAppliance(std::string key, Args ... args)
+    void addAppliance(std::string type_key, std::string entity_key, nlohmann::json parameters)
     {
-      addManageableEntity<TApplianceType>(key, std::forward<Args>(args)...);
+      instantiateRegisteredType(type_key, entity_key, parameters);
     }
 
     void setVariable(std::string appliance_key, std::list<std::string> variable_parts, nlohmann::json value);
