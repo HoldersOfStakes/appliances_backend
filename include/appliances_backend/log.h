@@ -29,18 +29,24 @@ namespace appliances_backend
     template<typename TValueType>
     Log& operator<<(const TValueType& value)
     {
-      getCurrentStream() << generateLineStart() << value;
-      is_at_beginning_of_line_ = false;
+      if(current_severity_ >= minimum_log_severity_)
+      {
+	getCurrentStream() << generateLineStart() << value;
+	is_at_beginning_of_line_ = false;
+      }
 
       return *this;
     }
 
     Log& operator<<(std::ostream&(*f)(std::ostream&))
     {
-      getCurrentStream() << generateLineStart() << "\033[0m";
+      if(current_severity_ >= minimum_log_severity_)
+      {
+	getCurrentStream() << generateLineStart() << "\033[0m";
 
-      f(getCurrentStream());
-      is_at_beginning_of_line_ = true;
+	f(getCurrentStream());
+	is_at_beginning_of_line_ = true;
+      }
 
       return *this;
     }
@@ -53,9 +59,13 @@ namespace appliances_backend
     }
 
     Log deriveLogLevel();
+    Log deriveLogLevel(std::string prefix);
+
+    void setMinimumLogSeverity(Severity minimum_log_severity);
 
   private:
     Severity current_severity_;
+    Severity minimum_log_severity_;
     bool is_at_beginning_of_line_;
     std::string prefix_;
     unsigned int level_;

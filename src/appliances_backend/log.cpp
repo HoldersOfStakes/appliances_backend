@@ -89,9 +89,20 @@ namespace appliances_backend
 
   Log Log::deriveLogLevel()
   {
-    Log derived_log(prefix_, level_ + 1);
+    return deriveLogLevel(prefix_);
+  }
+
+  Log Log::deriveLogLevel(std::string prefix)
+  {
+    Log derived_log(prefix, level_ + 1);
+    derived_log.setMinimumLogSeverity(minimum_log_severity_);
     derived_log << current_severity_;
 
     return derived_log;
+  }
+
+  void Log::setMinimumLogSeverity(Severity minimum_log_severity)
+  {
+    minimum_log_severity_ = minimum_log_severity;
   }
 }

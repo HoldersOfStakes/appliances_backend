@@ -10,6 +10,7 @@ namespace appliances_backend
     , interfaces_manager_{ log() }
     , accessories_manager_{ log() }
   {
+    log().setMinimumLogSeverity(Log::Severity::Debug);
   }
 
   void Backend::initialize()
