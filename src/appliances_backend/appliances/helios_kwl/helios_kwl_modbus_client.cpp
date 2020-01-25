@@ -90,11 +90,32 @@ namespace appliances_backend
 
     variable_as_uint16[3] = 0;
 
-    // Select variable to read.
-    modbus_client_.writeToRegister(1, 4, variable_as_uint16);
+    int retries = 5;
 
-    // Retrieve result.
-    return modbus_client_.readFromRegister(1, count);
+    while(retries > 0)
+    {
+      try
+      {
+	// Select variable to read.
+	modbus_client_.writeToRegister(1, 4, variable_as_uint16);
+
+	// Retrieve result.
+	return modbus_client_.readFromRegister(1, count);
+      }
+      catch(const std::runtime_error& ex)
+      {
+	if(retries == 0)
+	{
+	  std::cerr << "Failed to read variable, giving up." << std::endl;
+	  throw;
+	}
+
+	retries--;
+	std::cerr << "Failed to read variable, retries left: " << retries << std::endl;
+
+	usleep(100000);
+      }
+    }
   }
 
   void HeliosKwlModbusClient::printHex(uint16_t* data, ssize_t length)

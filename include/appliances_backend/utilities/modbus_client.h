@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
+#include <sys/time.h>
 
 // libmodbus
 #include <modbus/modbus.h>
@@ -26,6 +27,7 @@ namespace appliances_backend
 
     private:
       modbus_t* modbus_connection_;
+      struct timeval response_timeout_;
     };
   }
 }
