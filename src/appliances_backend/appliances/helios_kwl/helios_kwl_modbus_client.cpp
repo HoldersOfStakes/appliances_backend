@@ -116,6 +116,8 @@ namespace appliances_backend
 	usleep(100000);
       }
     }
+
+    throw std::runtime_error("Failed to read variable.");
   }
 
   void HeliosKwlModbusClient::printHex(uint16_t* data, ssize_t length)
