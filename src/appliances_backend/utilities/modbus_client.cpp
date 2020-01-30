@@ -8,10 +8,9 @@ namespace appliances_backend
     ModbusClient::ModbusClient(std::string host, unsigned short port, unsigned int slave_id)
       : modbus_connection_{ modbus_new_tcp(host.c_str(), port) }
     {
-      response_timeout_.tv_sec = 3;
-      response_timeout_.tv_usec = 0;
+      const uint32_t timeout_seconds = 3;
 
-      modbus_set_response_timeout(modbus_connection_, &response_timeout_);
+      modbus_set_response_timeout(modbus_connection_, timeout_seconds, 0);
       modbus_set_slave(modbus_connection_, slave_id);
 
       if(modbus_connect(modbus_connection_) == -1)
