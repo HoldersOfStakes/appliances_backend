@@ -39,6 +39,9 @@ add_library(${PROJECT_NAME}_appliance_helios_kwl
   src/appliances_backend/appliances/helios_kwl/helios_kwl.cpp
   src/appliances_backend/appliances/helios_kwl/helios_kwl_modbus_client.cpp)
 
+add_library(${PROJECT_NAME}_appliance_ikea_tradfri
+  src/appliances_backend/appliances/ikea_tradfri/ikea_tradfri.cpp)
+
 set(EXECUTABLE_SOURCES
   src/main.cpp)
 
@@ -60,4 +63,5 @@ add_executable(${PROJECT_NAME}-bin
 target_link_libraries(${PROJECT_NAME}-bin
   ${PROJECT_NAME}
   ${PROJECT_NAME}_interface_homebridge_mqtt
-  ${PROJECT_NAME}_appliance_helios_kwl)
+  ${PROJECT_NAME}_appliance_helios_kwl
+  ${PROJECT_NAME}_appliance_ikea_tradfri)

@@ -12,6 +12,7 @@
 
 // Private
 #include <appliances_backend/appliances/helios_kwl/helios_kwl.h>
+#include <appliances_backend/appliances/ikea_tradfri/ikea_tradfri.h>
 #include <appliances_backend/interfaces/homebridge/homebridge_mqtt.h>
 #include <appliances_backend/appliances_manager.h>
 #include <appliances_backend/interfaces_manager.h>

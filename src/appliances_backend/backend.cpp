@@ -208,6 +208,15 @@ namespace appliances_backend
 					  parameters["host"].get<std::string>()
 					 );
 				     });
+
+    appliances_manager_.registerType("ikea_tradfri",
+				     [](nlohmann::json parameters)
+				     {
+				       return std::make_shared<appliances::IkeaTradfri>
+					 (
+					  parameters["host"].get<std::string>()
+					 );
+				     });
   }
 
   void Backend::loadConfiguration(std::string config_file_path)
