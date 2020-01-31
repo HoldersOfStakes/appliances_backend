@@ -52,6 +52,10 @@ namespace appliances_backend
     {
       return Service::Type::TemperatureSensor;
     }
+    else if(type_string == "Light")
+    {
+      return Service::Type::Light;
+    }
 
     return Service::Type::Undefined;
   }

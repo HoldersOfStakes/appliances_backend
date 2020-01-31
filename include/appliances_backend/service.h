@@ -19,7 +19,8 @@ namespace appliances_backend
     {
       Undefined = 0,
       Fan,
-      TemperatureSensor
+      TemperatureSensor,
+      Light
     };
 
     Service(std::string key, Type type);
