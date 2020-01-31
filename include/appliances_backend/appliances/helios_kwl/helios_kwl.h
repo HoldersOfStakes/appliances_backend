@@ -24,7 +24,7 @@ namespace appliances_backend
     class HeliosKwl : public ApplianceBase
     {
     public:
-      HeliosKwl(std::string host);
+      HeliosKwl(std::string host, Log log);
 
       unsigned int getFanStage();
       void setFanStage(unsigned int fan_stage);
@@ -37,7 +37,8 @@ namespace appliances_backend
       void setVariable(std::list<std::string> variable_parts, nlohmann::json value) override;
 
     private:
-      HeliosKwlModbusClient helios_kwl_modbus_client_;
+      std::string host_;
+      std::unique_ptr<HeliosKwlModbusClient> helios_kwl_modbus_client_;
       std::mutex modbus_access_;
     };
   }

@@ -3,6 +3,11 @@
 
 namespace appliances_backend
 {
+  ManageableBase::ManageableBase(Log log)
+    : LoggingBase{ log }
+  {
+  }
+
   void ManageableBase::start()
   {
     stop();

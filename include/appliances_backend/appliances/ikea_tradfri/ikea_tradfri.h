@@ -14,6 +14,7 @@
 
 // Private
 #include <appliances_backend/appliance_base.h>
+#include <appliances_backend/appliances/ikea_tradfri/ikea_tradfri_coap_client.h>
 
 
 namespace appliances_backend
@@ -23,7 +24,7 @@ namespace appliances_backend
     class IkeaTradfri : public ApplianceBase
     {
     public:
-      IkeaTradfri(std::string host);
+      IkeaTradfri(std::string host, Log log);
 
       void run() override;
 

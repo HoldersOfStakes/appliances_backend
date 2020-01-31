@@ -3,6 +3,11 @@
 
 namespace appliances_backend
 {
+  VariableManagingBase::VariableManagingBase(Log log)
+    : ManageableBase{ log }
+  {
+  }
+
   bool VariableManagingBase::wasVariableChanged()
   {
     std::lock_guard<std::mutex> lock(variable_access_mutex_);

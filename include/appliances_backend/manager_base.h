@@ -61,20 +61,20 @@ namespace appliances_backend
       }
     }
 
-    void registerType(std::string type_key, std::function<std::shared_ptr<TManagedType>(nlohmann::json)> generator)
+    void registerType(std::string type_key, std::function<std::shared_ptr<TManagedType>(nlohmann::json, Log)> generator)
     {
       factory_.registerType(type_key, generator);
     }
 
-    std::shared_ptr<TManagedType> instantiateRegisteredType(std::string type_key, std::string entity_key, nlohmann::json parameters)
+    std::shared_ptr<TManagedType> instantiateRegisteredType(std::string type_key, std::string entity_key, nlohmann::json parameters, bool start, Log log)
     {
       if(!validateInputParametersForRegisteredType(type_key, parameters))
       {
 	throw std::runtime_error("Failed to validate input parameters for entity '" + entity_key + "' (type '" + type_key + "').");
       }
 
-      std::shared_ptr<TManagedType> entity = factory_.instantiate(type_key, parameters);
-      addManageableEntity(entity_key, entity);
+      std::shared_ptr<TManagedType> entity = factory_.instantiate(type_key, parameters, log);
+      addManageableEntity(entity_key, entity, start);
 
       return entity;
     }
@@ -86,7 +86,7 @@ namespace appliances_backend
     Factory<TManagedType> factory_;
 
     template<class TManageableType>
-    void addManageableEntity(std::string key, std::shared_ptr<TManageableType> entity)
+    void addManageableEntity(std::string key, std::shared_ptr<TManageableType> entity, bool start)
     {
       {
 	std::lock_guard<std::mutex> lock(managed_entities_access_);
@@ -99,7 +99,7 @@ namespace appliances_backend
 	managed_entities_[key] = entity;
       }
 
-      if(is_started_)
+      if(is_started_ && start)
       {
 	startManagedEntity(key);
       }

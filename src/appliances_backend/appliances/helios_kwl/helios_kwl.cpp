@@ -5,37 +5,40 @@ namespace appliances_backend
 {
   namespace appliances
   {
-    HeliosKwl::HeliosKwl(std::string host)
-      : helios_kwl_modbus_client_{ HeliosKwlModbusClient(host) }
+    HeliosKwl::HeliosKwl(std::string host, Log log)
+      : ApplianceBase{ log }
+      , host_{ host }
     {
     }
 
     unsigned int HeliosKwl::getFanStage()
     {
       std::lock_guard<std::mutex> lock(modbus_access_);
-      return helios_kwl_modbus_client_.readFanStage();
+      return helios_kwl_modbus_client_->readFanStage();
     }
 
     void HeliosKwl::setFanStage(unsigned int fan_stage)
     {
       std::lock_guard<std::mutex> lock(modbus_access_);
-      helios_kwl_modbus_client_.writeFanStage(fan_stage);
+      helios_kwl_modbus_client_->writeFanStage(fan_stage);
     }
 
     double HeliosKwl::getTemperatureSupplyAir()
     {
       std::lock_guard<std::mutex> lock(modbus_access_);
-      return helios_kwl_modbus_client_.readTemperatureSupplyAir();
+      return helios_kwl_modbus_client_->readTemperatureSupplyAir();
     }
 
     double HeliosKwl::getTemperatureExtractAir()
     {
       std::lock_guard<std::mutex> lock(modbus_access_);
-      return helios_kwl_modbus_client_.readTemperatureExtractAir();
+      return helios_kwl_modbus_client_->readTemperatureExtractAir();
     }
 
     void HeliosKwl::run()
     {
+      helios_kwl_modbus_client_ = std::make_unique<HeliosKwlModbusClient>(host_);
+
       while(should_run_)
       {
 	setVariableState("fan_stage", getFanStage());
@@ -45,6 +48,8 @@ namespace appliances_backend
 	setVariableState("temperature_extract_air", getTemperatureExtractAir());
 	usleep(100000);
       }
+
+      helios_kwl_modbus_client_ = nullptr;
     }
 
     void HeliosKwl::setVariable(std::list<std::string> variable_parts, nlohmann::json value)
@@ -52,7 +57,7 @@ namespace appliances_backend
       if(variable_parts.size() == 1 &&
 	 variable_parts.front() == "fan_stage")
       {
-	std::cout << "Set fan stage to " << value.get<unsigned int>() << std::endl;
+	log() << Log::Severity::Debug << "Set fan stage to " << value.get<unsigned int>() << std::endl;
 
 	setFanStage(value.get<unsigned int>());
       }

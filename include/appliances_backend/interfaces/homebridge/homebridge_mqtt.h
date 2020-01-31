@@ -26,7 +26,7 @@ namespace appliances_backend
     class HomebridgeMqtt : public InterfaceBase
     {
     public:
-      HomebridgeMqtt(std::string host, unsigned short port);
+      HomebridgeMqtt(std::string host, unsigned short port, Log log);
 
       void registerAccessory(std::shared_ptr<Accessory> accessory) override;
       void deregisterAccessory(std::string name) override;

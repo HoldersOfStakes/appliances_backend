@@ -29,9 +29,9 @@ namespace appliances_backend
   public:
     InterfacesManager(Log log);
 
-    void addInterface(std::string type_key, std::string entity_key, nlohmann::json parameters)
+    void addInterface(std::string type_key, std::string entity_key, nlohmann::json parameters, bool start, Log log)
     {
-      instantiateRegisteredType(type_key, entity_key, parameters);
+      instantiateRegisteredType(type_key, entity_key, parameters, start, log);
     }
 
     void setVariable(std::string interface_key, std::shared_ptr<Accessory> accessory, std::shared_ptr<Service> service, std::shared_ptr<Characteristic> characteristic, nlohmann::json value);

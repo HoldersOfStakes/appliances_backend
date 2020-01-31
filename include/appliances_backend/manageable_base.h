@@ -6,13 +6,16 @@
 #include <atomic>
 #include <thread>
 
+// Private
+#include <appliances_backend/logging_base.h>
+
 
 namespace appliances_backend
 {
-  class ManageableBase
+  class ManageableBase : public LoggingBase
   {
   public:
-    ManageableBase() = default;
+    ManageableBase(Log log);
     virtual ~ManageableBase() = default;
 
     void start();

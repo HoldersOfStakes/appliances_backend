@@ -3,9 +3,10 @@
 
 namespace appliances_backend
 {
-  Backend::Backend(std::string config_file_path)
+  Backend::Backend(std::string config_file_path, RunMode run_mode)
     : LoggingBase{ Log("Backend") }
     , config_file_path_{ config_file_path }
+    , run_mode_{ run_mode }
     , appliances_manager_{ log() }
     , interfaces_manager_{ log() }
     , accessories_manager_{ log() }
@@ -15,26 +16,43 @@ namespace appliances_backend
 
   void Backend::initialize()
   {
+    if(run_mode_ == RunMode::DryRun)
+    {
+      log() << Log::Severity::Warning << "Running in dry run mode, not actually starting backend." << std::endl;
+    }
+
     loadPlugins();
     loadConfiguration(config_file_path_);
 
-    interfaces_manager_.start();
-    appliances_manager_.start();
+    if(run_mode_ != RunMode::DryRun)
+    {
+      interfaces_manager_.start();
+      appliances_manager_.start();
+    }
   }
 
   void Backend::deinitialize()
   {
-    for(const std::string accessory_name : accessories_manager_.getAccessoryNames())
+    if(run_mode_ != RunMode::DryRun)
     {
-      interfaces_manager_.deregisterAccessory(accessory_name);
-    }
+      for(const std::string accessory_name : accessories_manager_.getAccessoryNames())
+      {
+	interfaces_manager_.deregisterAccessory(accessory_name);
+      }
 
-    appliances_manager_.stop();
-    interfaces_manager_.stop();
+      appliances_manager_.stop();
+      interfaces_manager_.stop();
+    }
   }
 
   void Backend::run()
   {
+    if(run_mode_ == RunMode::DryRun)
+    {
+      // Skip run() when dry run mode active.
+      return;
+    }
+
     should_run_ = true;
 
     for(const std::string accessory_name : accessories_manager_.getAccessoryNames())
@@ -191,30 +209,33 @@ namespace appliances_backend
   void Backend::loadPlugins()
   {
     interfaces_manager_.registerType("homebridge_mqtt",
-				     [](nlohmann::json parameters)
+				     [](nlohmann::json parameters, Log log)
 				     {
 				       return std::make_shared<interfaces::HomebridgeMqtt>
 					 (
 					  parameters["host"].get<std::string>(),
-					  parameters["port"].get<unsigned short>()
+					  parameters["port"].get<unsigned short>(),
+					  log
 					 );
 				     });
 
     appliances_manager_.registerType("helios_kwl",
-				     [](nlohmann::json parameters)
+				     [](nlohmann::json parameters, Log log)
 				     {
 				       return std::make_shared<appliances::HeliosKwl>
 					 (
-					  parameters["host"].get<std::string>()
+					  parameters["host"].get<std::string>(),
+					  log
 					 );
 				     });
 
     appliances_manager_.registerType("ikea_tradfri",
-				     [](nlohmann::json parameters)
+				     [](nlohmann::json parameters, Log log)
 				     {
 				       return std::make_shared<appliances::IkeaTradfri>
 					 (
-					  parameters["host"].get<std::string>()
+					  parameters["host"].get<std::string>(),
+					  log
 					 );
 				     });
   }
@@ -344,7 +365,7 @@ namespace appliances_backend
     
     try
     {
-      appliances_manager_.addAppliance(appliance_type, appliance_key, convertConfigToJson(appliance_description["parameters"]));
+      appliances_manager_.addAppliance(appliance_type, appliance_key, convertConfigToJson(appliance_description["parameters"]), run_mode_ != RunMode::DryRun, LoggingBase::log().prefixed(appliance_key));
     }
     catch(const std::runtime_error& ex)
     {
@@ -387,7 +408,7 @@ namespace appliances_backend
 
     try
     {
-      interfaces_manager_.addInterface(interface_type, interface_key, convertConfigToJson(interface_description["parameters"]));
+      interfaces_manager_.addInterface(interface_type, interface_key, convertConfigToJson(interface_description["parameters"]), run_mode_ != RunMode::DryRun, LoggingBase::log().prefixed(interface_key));
     }
     catch(const std::runtime_error& ex)
     {

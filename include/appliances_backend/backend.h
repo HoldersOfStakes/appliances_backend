@@ -26,7 +26,13 @@ namespace appliances_backend
   class Backend : public LoggingBase
   {
   public:
-    Backend(std::string config_file_path);
+    enum class RunMode
+    {
+     Normal = 0,
+     DryRun
+    };
+
+    Backend(std::string config_file_path, RunMode run_mode);
     virtual ~Backend() = default;
 
     void initialize();
@@ -42,6 +48,8 @@ namespace appliances_backend
 
     std::atomic<bool> should_run_;
     std::string config_file_path_;
+    RunMode run_mode_;
+
     InterfacesManager interfaces_manager_;
     AppliancesManager appliances_manager_;
     AccessoriesManager accessories_manager_;

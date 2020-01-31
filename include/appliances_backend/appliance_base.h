@@ -24,7 +24,7 @@ namespace appliances_backend
   class ApplianceBase : public VariableManagingBase
   {
   public:
-    ApplianceBase() = default;
+    ApplianceBase(Log log);
 
     virtual void setVariable(std::list<std::string> variable_parts, nlohmann::json value) = 0;
   };

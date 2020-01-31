@@ -5,7 +5,8 @@ namespace appliances_backend
 {
   namespace appliances
   {
-    IkeaTradfri::IkeaTradfri(std::string host)
+    IkeaTradfri::IkeaTradfri(std::string host, Log log)
+      : ApplianceBase{ log }
     {
     }
 

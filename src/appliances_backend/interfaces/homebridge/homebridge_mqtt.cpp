@@ -5,14 +5,15 @@ namespace appliances_backend
 {
   namespace interfaces
   {
-    HomebridgeMqtt::HomebridgeMqtt(std::string host, unsigned short port)
-      : mqtt_client_{ host, port }
+    HomebridgeMqtt::HomebridgeMqtt(std::string host, unsigned short port, Log log)
+      : InterfaceBase{ log }
+      , mqtt_client_{ host, port }
     {
     }
 
     void HomebridgeMqtt::registerAccessory(std::shared_ptr<Accessory> accessory)
     {
-      std::cout << "Register accessory '" << accessory->getKey() << "'" << std::endl;
+      log() << Log::Severity::Debug << "Register accessory '" << accessory->getKey() << "'" << std::endl;
 
       publishString("homebridge/to/add", accessoryServiceToJsonString(accessory, accessory->getPrimaryService()));
 
@@ -34,7 +35,7 @@ namespace appliances_backend
 
     void HomebridgeMqtt::deregisterAccessory(std::string name)
     {
-      std::cout << "Deregister accessory '" << name << "'" << std::endl;
+      log() << Log::Severity::Debug << "Deregister accessory '" << name << "'" << std::endl;
 
       publishString("homebridge/to/remove", "{\"name\": \"" + name + "\"}");
     }
@@ -58,7 +59,7 @@ namespace appliances_backend
       {
 	try
 	{
-	  std::cout << "Connecting to MQTT" << std::endl;
+	  log() << Log::Severity::Debug << "Connecting to MQTT" << std::endl;
 	  mqtt_client_.connect();
 	  break;
 	}

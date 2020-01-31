@@ -60,6 +60,7 @@ namespace appliances_backend
 
     Log deriveLogLevel();
     Log deriveLogLevel(std::string prefix);
+    Log prefixed(std::string prefix);
 
     void setMinimumLogSeverity(Severity minimum_log_severity);
 

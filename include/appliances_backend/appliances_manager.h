@@ -23,9 +23,9 @@ namespace appliances_backend
   public:
     AppliancesManager(Log log);
 
-    void addAppliance(std::string type_key, std::string entity_key, nlohmann::json parameters)
+    void addAppliance(std::string type_key, std::string entity_key, nlohmann::json parameters, bool start, Log log)
     {
-      instantiateRegisteredType(type_key, entity_key, parameters);
+      instantiateRegisteredType(type_key, entity_key, parameters, start, log);
     }
 
     void setVariable(std::string appliance_key, std::list<std::string> variable_parts, nlohmann::json value);

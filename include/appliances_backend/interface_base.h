@@ -21,7 +21,7 @@ namespace appliances_backend
   class InterfaceBase : public VariableManagingBase
   {
   public:
-    InterfaceBase() = default;
+    InterfaceBase(Log log);
 
     virtual void registerAccessory(std::shared_ptr<Accessory> accessory) = 0;
     virtual void deregisterAccessory(std::string name) = 0;

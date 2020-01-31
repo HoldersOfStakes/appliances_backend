@@ -3,4 +3,8 @@
 
 namespace appliances_backend
 {
+  ApplianceBase::ApplianceBase(Log log)
+    : VariableManagingBase{ log }
+  {
+  }
 }

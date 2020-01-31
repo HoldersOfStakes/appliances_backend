@@ -22,7 +22,7 @@ namespace appliances_backend
   class VariableManagingBase : public ManageableBase
   {
   public:
-    VariableManagingBase() = default;
+    VariableManagingBase(Log log);
 
     bool wasVariableChanged();
     std::pair<std::string, nlohmann::json> getChangedVariable();
