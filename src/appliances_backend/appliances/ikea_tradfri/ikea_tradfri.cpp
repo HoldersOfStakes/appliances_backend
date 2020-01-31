@@ -12,9 +12,11 @@ namespace appliances_backend
 
     void IkeaTradfri::run()
     {
+      using namespace std::chrono_literals;
+
       while(should_run_)
       {
-	usleep(100000);
+	waitFor(100ms);
       }
     }
 

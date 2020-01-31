@@ -37,16 +37,19 @@ namespace appliances_backend
 
     void HeliosKwl::run()
     {
+      using namespace std::chrono_literals;
       helios_kwl_modbus_client_ = std::make_unique<HeliosKwlModbusClient>(host_);
 
       while(should_run_)
       {
 	setVariableState("fan_stage", getFanStage());
-	usleep(100000);
+	waitFor(100ms);
+
 	setVariableState("temperature_supply_air", getTemperatureSupplyAir());
-	usleep(100000);
+	waitFor(100ms);
+
 	setVariableState("temperature_extract_air", getTemperatureExtractAir());
-	usleep(100000);
+	waitFor(100ms);
       }
 
       helios_kwl_modbus_client_ = nullptr;

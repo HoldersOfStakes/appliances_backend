@@ -72,6 +72,8 @@ namespace appliances_backend
 
     void HomebridgeMqtt::run()
     {
+      using namespace std::chrono_literals;
+
       std::string homebridge_control_in_topic = "homebridge/from/set";
       mqtt_client_.subscribe(homebridge_control_in_topic);
 
@@ -92,7 +94,7 @@ namespace appliances_backend
 	  delete[] data.first;
 	}
 
-	usleep(50000);
+	waitFor(50ms);
       }
 
       // TODO(fairlight1337): Unsubscribe here.

@@ -30,4 +30,9 @@ namespace appliances_backend
       }
     }
   }
+
+  void ManageableBase::waitFor(std::chrono::steady_clock::duration duration)
+  {
+    std::this_thread::sleep_for(duration);
+  }
 }

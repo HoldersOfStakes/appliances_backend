@@ -4,6 +4,7 @@
 
 // System
 #include <atomic>
+#include <chrono>
 #include <thread>
 
 // Private
@@ -27,6 +28,8 @@ namespace appliances_backend
 
     virtual void initialize() {}
     virtual void run() = 0;
+
+    void waitFor(std::chrono::steady_clock::duration duration);
   };
 }
 
