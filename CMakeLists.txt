@@ -16,6 +16,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/appliances_backend/utilities/modbus_client.cpp
   src/appliances_backend/utilities/mqtt_client.cpp
+  src/appliances_backend/utilities/coap_client.cpp
   src/appliances_backend/manageable_base.cpp
   src/appliances_backend/variable_managing_base.cpp
   src/appliances_backend/appliance_base.cpp
@@ -40,7 +41,8 @@ add_library(${PROJECT_NAME}_appliance_helios_kwl
   src/appliances_backend/appliances/helios_kwl/helios_kwl_modbus_client.cpp)
 
 add_library(${PROJECT_NAME}_appliance_ikea_tradfri
-  src/appliances_backend/appliances/ikea_tradfri/ikea_tradfri.cpp)
+  src/appliances_backend/appliances/ikea_tradfri/ikea_tradfri.cpp
+  src/appliances_backend/appliances/ikea_tradfri/ikea_tradfri_coap_client.cpp)
 
 set(EXECUTABLE_SOURCES
   src/main.cpp)
